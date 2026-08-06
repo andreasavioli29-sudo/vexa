@@ -9,10 +9,10 @@ import { Hero } from "@/components/sections/hero";
 /**
  * One continuous camera move, not a scene cut: the client's villa photo
  * dollies in toward the bed while a vignette closes in around it — the room
- * going dark, never a blur. The mattress emerges at that exact screen
- * position and drifts to centered as the black studio atmosphere and the
- * product headline arrive after it, in that order. All driven by real
- * scroll position via a single pinned, scroll-scrubbed wrapper.
+ * going dark, never a blur. The mattress then fades in and slides upward
+ * into full view, centered, as the black studio atmosphere and the product
+ * headline arrive after it, in that order. All driven by real scroll
+ * position via a single pinned, scroll-scrubbed wrapper.
  */
 export function CinematicHero() {
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -38,11 +38,11 @@ export function CinematicHero() {
   // Final cleanup once the iris has essentially closed
   const blackoutOpacity = useTransform(progress, [0.45, 0.6], [0, 1]);
 
-  // The mattress emerges exactly where the bed sits, then drifts to centered
+  // The mattress fades in mostly hidden below the frame (~20% visible), then
+  // slides upward — a single continuous reveal, not a position drift — until
+  // it is fully in view by the end of the Hero transition.
   const mattressOpacity = useTransform(progress, [0.3, 0.55], [0, 1]);
-  const mattressX = useTransform(progress, [0.3, 0.62], ["17vw", "0vw"]);
-  const mattressY = useTransform(progress, [0.3, 0.62], ["5vh", "0vh"]);
-  const mattressScale = useTransform(progress, [0.3, 0.62], [0.52, 1]);
+  const mattressY = useTransform(progress, [0.3, 0.8], ["80%", "0%"]);
 
   // The black studio atmosphere settles in behind the mattress
   const atmosphereOpacity = useTransform(progress, [0.5, 0.65], [0, 1]);
@@ -73,9 +73,7 @@ export function CinematicHero() {
           textOpacity={textOpacity}
           textPointerEvents={textPointerEvents}
           mattressOpacity={mattressOpacity}
-          mattressX={mattressX}
           mattressY={mattressY}
-          mattressScale={mattressScale}
           settleRotate={settleRotate}
           settleY={settleY}
         />

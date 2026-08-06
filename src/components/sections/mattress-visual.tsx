@@ -12,11 +12,14 @@ type MattressVisualProps = {
   settleRotate: MotionValue<number>;
   /** Extra, near-imperceptible vertical drift tied to real scroll position. */
   settleY: MotionValue<number>;
-  /** Entrance — emerges at the bed's own screen position, then drifts to centered. */
+  /**
+   * Entrance reveal — fades in mostly hidden below the frame (~20% visible)
+   * and slides upward to fully visible. `entranceY` is a percentage of the
+   * mattress's own rendered height (not the viewport), so "80%" hides the
+   * bottom 80% of the photo and "0%" seats it fully in view.
+   */
   entranceOpacity: MotionValue<number>;
-  entranceX: MotionValue<string>;
   entranceY: MotionValue<string>;
-  entranceScale: MotionValue<number>;
 };
 
 /**
@@ -33,9 +36,7 @@ export function MattressVisual({
   settleRotate,
   settleY,
   entranceOpacity,
-  entranceX,
   entranceY,
-  entranceScale,
 }: MattressVisualProps) {
   const sheen = useMotionTemplate`radial-gradient(620px circle at ${lightX}% ${lightY}%, rgba(255,255,255,0.1), transparent 60%)`;
 
@@ -46,9 +47,7 @@ export function MattressVisual({
       style={{
         perspective: "2600px",
         opacity: entranceOpacity,
-        x: entranceX,
         y: entranceY,
-        scale: entranceScale,
       }}
     >
       {/* ambient copper atmosphere behind the object */}
@@ -59,7 +58,12 @@ export function MattressVisual({
       <motion.div
         className="relative"
         style={{
-          width: "clamp(320px, 62vw, 900px)",
+          // ~75% of viewport width, keeping the photo's true 1536:1024
+          // aspect ratio (never cropped) — capped so the derived height
+          // (width / 1.5) can never exceed ~58% of viewport height, which
+          // keeps the full mattress in frame under the headline on very
+          // wide screens without ever growing absurdly large on ultrawide.
+          width: "min(75vw, 1080px, calc(58svh * 1.5))",
           aspectRatio: "1536 / 1024",
           rotate: settleRotate,
           y: settleY,
@@ -96,7 +100,7 @@ export function MattressVisual({
                 alt="VEXA ONE — the official product"
                 fill
                 priority
-                sizes="(min-width: 1024px) 62vw, 90vw"
+                sizes="(min-width: 1024px) 75vw, 90vw"
                 className="select-none object-contain"
                 draggable={false}
               />

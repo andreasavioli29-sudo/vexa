@@ -18,17 +18,15 @@ type HeroProps = {
   textOpacity: MotionValue<number>;
   textPointerEvents: MotionValue<string>;
   mattressOpacity: MotionValue<number>;
-  mattressX: MotionValue<string>;
   mattressY: MotionValue<string>;
-  mattressScale: MotionValue<number>;
   settleRotate: MotionValue<number>;
   settleY: MotionValue<number>;
 };
 
 /**
  * Scene 02/03 — the product world. Everything here arrives in its own time,
- * driven by CinematicHero's scroll progress: the mattress emerges first (at
- * the bed's own screen position, drifting to centered), the black studio
+ * driven by CinematicHero's scroll progress: the mattress fades in mostly
+ * hidden below the frame and slides upward into full view, the black studio
  * atmosphere settles in behind it, and the headline/CTAs arrive last, once
  * the object is already in place — never as a single all-at-once cross-fade.
  */
@@ -37,9 +35,7 @@ export function Hero({
   textOpacity,
   textPointerEvents,
   mattressOpacity,
-  mattressX,
   mattressY,
-  mattressScale,
   settleRotate,
   settleY,
 }: HeroProps) {
@@ -121,7 +117,16 @@ export function Hero({
         </div>
       </motion.div>
 
-      <div className="relative z-10 mt-8 flex flex-1 items-end justify-center pb-[15vh] sm:mt-10 sm:pb-[6vh]">
+      {/*
+        No fixed-height / flex-1 box here on purpose: sizing this against
+        whatever vertical space remains would clip the photo (the previous
+        bug). Instead this is a plain, unconstrained flex row — the image
+        keeps its true aspect ratio at its own natural size, and the
+        entrance reveal (mostly hidden below the frame, sliding up to fully
+        visible) is done entirely with the `y` transform inside
+        MattressVisual, not by cropping a container.
+      */}
+      <div className="relative z-10 mt-6 flex w-full justify-center sm:mt-8">
         <MattressVisual
           tiltX={tiltX}
           tiltY={tiltY}
@@ -130,9 +135,7 @@ export function Hero({
           settleRotate={settleRotate}
           settleY={settleY}
           entranceOpacity={mattressOpacity}
-          entranceX={mattressX}
           entranceY={mattressY}
-          entranceScale={mattressScale}
         />
       </div>
 
