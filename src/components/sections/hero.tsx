@@ -1,40 +1,23 @@
 "use client";
 
-import { useRef, type PointerEvent } from "react";
-import {
-  motion,
-  useMotionValue,
-  useSpring,
-  useTransform,
-  useScroll,
-} from "framer-motion";
+import { type PointerEvent } from "react";
+import { motion, useMotionValue, useSpring, useTransform, type MotionValue } from "framer-motion";
 
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { MattressVisual } from "@/components/sections/mattress-visual";
 
-const EASE = [0.16, 1, 0.3, 1] as const;
-
-const stagger = {
-  hidden: {},
-  show: {
-    transition: { staggerChildren: 0.16, delayChildren: 0.3 },
-  },
+type HeroProps = {
+  settleRotate: MotionValue<number>;
+  settleY: MotionValue<number>;
 };
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 18 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.9, ease: EASE } },
-};
-
-const lineReveal = {
-  hidden: { y: "100%" },
-  show: { y: "0%", transition: { duration: 1.1, ease: EASE } },
-};
-
-export function Hero() {
-  const sectionRef = useRef<HTMLElement>(null);
-
+/**
+ * Scene 02/03 — the product world. Rendered inside CinematicHero's pinned
+ * viewport; its own entrance (opacity/scale) is owned by that orchestrator's
+ * scroll-driven crossfade, so this component just renders its final state.
+ */
+export function Hero({ settleRotate, settleY }: HeroProps) {
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
   const springX = useSpring(mouseX, { stiffness: 60, damping: 20, mass: 0.6 });
@@ -44,13 +27,6 @@ export function Hero() {
   const tiltY = useTransform(springX, [-0.5, 0.5], [-8, 8]);
   const lightX = useTransform(springX, [-0.5, 0.5], [35, 65]);
   const lightY = useTransform(springY, [-0.5, 0.5], [30, 60]);
-
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start start", "end start"],
-  });
-  const mattressY = useTransform(scrollYProgress, [0, 1], [0, 140]);
-  const mattressOpacity = useTransform(scrollYProgress, [0, 0.75, 1], [1, 1, 0.35]);
 
   function handlePointerMove(e: PointerEvent<HTMLElement>) {
     if (e.pointerType !== "mouse") return;
@@ -67,10 +43,9 @@ export function Hero() {
   return (
     <section
       id="top"
-      ref={sectionRef}
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
-      className="bg-grain relative flex min-h-[112svh] w-full flex-col overflow-hidden bg-black lg:min-h-[124svh]"
+      className="bg-grain relative flex h-full w-full flex-col overflow-hidden bg-black"
     >
       {/* Atmosphere — never flat black: layered soft gradients */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
@@ -81,53 +56,25 @@ export function Hero() {
         <div className="absolute inset-0 shadow-[inset_0_0_180px_60px_rgba(0,0,0,0.55)]" />
       </div>
 
-      <motion.div
-        variants={stagger}
-        initial="hidden"
-        animate="show"
-        className="relative z-10 flex w-full flex-col items-center px-6 pt-40 text-center sm:pt-48 lg:pt-52"
-      >
-        <motion.div variants={fadeUp}>
-          <Logo
-            markClassName="h-4 w-4 sm:h-5 sm:w-5"
-            wordmarkClassName="text-base sm:text-lg"
-          />
-        </motion.div>
+      <div className="relative z-10 flex w-full flex-col items-center px-6 pt-32 text-center sm:pt-36 lg:pt-40">
+        <Logo markClassName="h-4 w-4 sm:h-5 sm:w-5" wordmarkClassName="text-base sm:text-lg" />
 
-        <motion.div
-          variants={fadeUp}
-          className="mt-9 flex items-center gap-3 text-copper-300/90 sm:mt-11"
-        >
+        <div className="mt-9 flex items-center gap-3 text-copper-300/90 sm:mt-11">
           <span className="h-px w-8 bg-copper-400/50" />
           <span className="text-[10.5px] font-medium uppercase tracking-[0.42em] sm:text-xs">
             The Art of Sleeping
           </span>
           <span className="h-px w-8 bg-copper-400/50" />
-        </motion.div>
+        </div>
 
-        <motion.h1
-          variants={fadeUp}
-          className="mt-8 max-w-4xl text-[clamp(2.4rem,6.8vw,5.75rem)] font-light leading-[1.04] tracking-[-0.01em] text-white sm:mt-10"
-        >
-          <span className="block overflow-hidden">
-            <motion.span variants={lineReveal} className="block">
-              Not just a mattress.
-            </motion.span>
-          </span>
-          <span className="block overflow-hidden pb-1">
-            <motion.span variants={lineReveal} className="block">
-              A new standard of{" "}
-              <span className="font-display italic font-normal text-copper-200">
-                sleep.
-              </span>
-            </motion.span>
-          </span>
-        </motion.h1>
+        <h1 className="mt-8 max-w-4xl text-[clamp(2rem,5.6vw,4.75rem)] font-light leading-[1.06] tracking-[-0.01em] text-white sm:mt-10">
+          Not just a mattress.
+          <br />
+          A new standard of{" "}
+          <span className="font-display italic font-normal text-copper-200">sleep.</span>
+        </h1>
 
-        <motion.div
-          variants={fadeUp}
-          className="mt-11 flex w-full flex-col items-center gap-4 sm:mt-14 sm:w-auto sm:flex-row sm:justify-center sm:gap-5"
-        >
+        <div className="mt-10 flex w-full flex-col items-center gap-4 sm:mt-12 sm:w-auto sm:flex-row sm:justify-center sm:gap-5">
           <Button href="/one" size="lg" icon className="w-full sm:w-auto">
             Discover VEXA
           </Button>
@@ -139,22 +86,21 @@ export function Hero() {
           >
             Explore ONE &amp; SIGNATURE
           </Button>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
-      <motion.div
-        style={{ y: mattressY, opacity: mattressOpacity }}
-        className="relative z-10 mt-16 flex flex-1 items-end justify-center pb-[8vh] sm:mt-20"
-      >
-        <MattressVisual tiltX={tiltX} tiltY={tiltY} lightX={lightX} lightY={lightY} />
-      </motion.div>
+      <div className="relative z-10 mt-8 flex flex-1 items-end justify-center pb-[6vh] sm:mt-10">
+        <MattressVisual
+          tiltX={tiltX}
+          tiltY={tiltY}
+          lightX={lightX}
+          lightY={lightY}
+          settleRotate={settleRotate}
+          settleY={settleY}
+        />
+      </div>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.6, duration: 1 }}
-        className="absolute inset-x-0 bottom-8 z-20 flex flex-col items-center gap-3 sm:bottom-10"
-      >
+      <div className="absolute inset-x-0 bottom-8 z-20 flex flex-col items-center gap-3 sm:bottom-10">
         <span className="text-[10px] font-medium uppercase tracking-[0.35em] text-anthracite-300">
           Scroll
         </span>
@@ -162,14 +108,10 @@ export function Hero() {
           <motion.span
             className="absolute inset-x-0 top-0 h-full bg-copper-300"
             animate={{ y: ["-100%", "100%"] }}
-            transition={{
-              duration: 1.8,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
+            transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
           />
         </span>
-      </motion.div>
+      </div>
     </section>
   );
 }
