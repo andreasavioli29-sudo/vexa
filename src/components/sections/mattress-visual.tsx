@@ -11,6 +11,11 @@ type MattressVisualProps = {
   settleRotate: MotionValue<number>;
   /** Extra, near-imperceptible vertical drift tied to real scroll position. */
   settleY: MotionValue<number>;
+  /** Entrance — emerges at the bed's own screen position, then drifts to centered. */
+  entranceOpacity: MotionValue<number>;
+  entranceX: MotionValue<string>;
+  entranceY: MotionValue<string>;
+  entranceScale: MotionValue<number>;
 };
 
 /**
@@ -26,14 +31,24 @@ export function MattressVisual({
   lightY,
   settleRotate,
   settleY,
+  entranceOpacity,
+  entranceX,
+  entranceY,
+  entranceScale,
 }: MattressVisualProps) {
   const sheen = useMotionTemplate`radial-gradient(560px circle at ${lightX}% ${lightY}%, rgba(255,255,255,0.14), transparent 60%)`;
 
   return (
-    <div
+    <motion.div
       aria-hidden="true"
       className="pointer-events-none relative flex w-full items-center justify-center"
-      style={{ perspective: "2400px" }}
+      style={{
+        perspective: "2400px",
+        opacity: entranceOpacity,
+        x: entranceX,
+        y: entranceY,
+        scale: entranceScale,
+      }}
     >
       {/* ambient copper atmosphere behind the object */}
       <div className="absolute left-1/2 top-1/2 h-[80%] w-[92%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(193,122,78,0.16),transparent)] blur-[90px]" />
@@ -82,6 +97,6 @@ export function MattressVisual({
 
       {/* volumetric fog */}
       <div className="absolute inset-x-0 bottom-0 h-1/2 bg-[radial-gradient(ellipse_at_bottom,rgba(255,255,255,0.05),transparent_70%)] blur-3xl" />
-    </div>
+    </motion.div>
   );
 }

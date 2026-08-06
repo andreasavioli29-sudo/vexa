@@ -1,23 +1,48 @@
 "use client";
 
 import { type PointerEvent } from "react";
-import { motion, useMotionValue, useSpring, useTransform, type MotionValue } from "framer-motion";
+import {
+  motion,
+  useMotionValue,
+  useSpring,
+  useTransform,
+  type MotionValue,
+} from "framer-motion";
 
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { MattressVisual } from "@/components/sections/mattress-visual";
 
 type HeroProps = {
+  atmosphereOpacity: MotionValue<number>;
+  textOpacity: MotionValue<number>;
+  textPointerEvents: MotionValue<string>;
+  mattressOpacity: MotionValue<number>;
+  mattressX: MotionValue<string>;
+  mattressY: MotionValue<string>;
+  mattressScale: MotionValue<number>;
   settleRotate: MotionValue<number>;
   settleY: MotionValue<number>;
 };
 
 /**
- * Scene 02/03 — the product world. Rendered inside CinematicHero's pinned
- * viewport; its own entrance (opacity/scale) is owned by that orchestrator's
- * scroll-driven crossfade, so this component just renders its final state.
+ * Scene 02/03 — the product world. Everything here arrives in its own time,
+ * driven by CinematicHero's scroll progress: the mattress emerges first (at
+ * the bed's own screen position, drifting to centered), the black studio
+ * atmosphere settles in behind it, and the headline/CTAs arrive last, once
+ * the object is already in place — never as a single all-at-once cross-fade.
  */
-export function Hero({ settleRotate, settleY }: HeroProps) {
+export function Hero({
+  atmosphereOpacity,
+  textOpacity,
+  textPointerEvents,
+  mattressOpacity,
+  mattressX,
+  mattressY,
+  mattressScale,
+  settleRotate,
+  settleY,
+}: HeroProps) {
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
   const springX = useSpring(mouseX, { stiffness: 60, damping: 20, mass: 0.6 });
@@ -45,18 +70,25 @@ export function Hero({ settleRotate, settleY }: HeroProps) {
       id="top"
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
-      className="bg-grain relative flex h-full w-full flex-col overflow-hidden bg-black"
+      className="bg-grain relative flex h-full w-full flex-col overflow-hidden"
     >
-      {/* Atmosphere — never flat black: layered soft gradients */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+      {/* Atmosphere — never flat black: layered soft gradients, arrives once the room has gone dark */}
+      <motion.div
+        aria-hidden="true"
+        style={{ opacity: atmosphereOpacity }}
+        className="pointer-events-none absolute inset-0 bg-black"
+      >
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_18%_-8%,var(--color-anthracite-800),transparent)] opacity-70" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_60%_at_84%_6%,var(--color-anthracite-900),transparent)]" />
         <div className="absolute inset-x-0 bottom-0 h-[65%] bg-[radial-gradient(ellipse_85%_70%_at_50%_100%,rgba(138,82,48,0.16),transparent_70%)]" />
         <div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_0%,var(--color-black-900)_92%)] opacity-70" />
         <div className="absolute inset-0 shadow-[inset_0_0_180px_60px_rgba(0,0,0,0.55)]" />
-      </div>
+      </motion.div>
 
-      <div className="relative z-10 flex w-full flex-col items-center px-6 pt-32 text-center sm:pt-36 lg:pt-40">
+      <motion.div
+        style={{ opacity: textOpacity, pointerEvents: textPointerEvents }}
+        className="relative z-10 flex w-full flex-col items-center px-6 pt-32 text-center sm:pt-36 lg:pt-40"
+      >
         <Logo markClassName="h-4 w-4 sm:h-5 sm:w-5" wordmarkClassName="text-base sm:text-lg" />
 
         <div className="mt-9 flex items-center gap-3 text-copper-300/90 sm:mt-11">
@@ -87,7 +119,7 @@ export function Hero({ settleRotate, settleY }: HeroProps) {
             Explore ONE &amp; SIGNATURE
           </Button>
         </div>
-      </div>
+      </motion.div>
 
       <div className="relative z-10 mt-8 flex flex-1 items-end justify-center pb-[6vh] sm:mt-10">
         <MattressVisual
@@ -97,10 +129,17 @@ export function Hero({ settleRotate, settleY }: HeroProps) {
           lightY={lightY}
           settleRotate={settleRotate}
           settleY={settleY}
+          entranceOpacity={mattressOpacity}
+          entranceX={mattressX}
+          entranceY={mattressY}
+          entranceScale={mattressScale}
         />
       </div>
 
-      <div className="absolute inset-x-0 bottom-8 z-20 flex flex-col items-center gap-3 sm:bottom-10">
+      <motion.div
+        style={{ opacity: textOpacity }}
+        className="absolute inset-x-0 bottom-8 z-20 flex flex-col items-center gap-3 sm:bottom-10"
+      >
         <span className="text-[10px] font-medium uppercase tracking-[0.35em] text-anthracite-300">
           Scroll
         </span>
@@ -111,7 +150,7 @@ export function Hero({ settleRotate, settleY }: HeroProps) {
             transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
           />
         </span>
-      </div>
+      </motion.div>
     </section>
   );
 }
