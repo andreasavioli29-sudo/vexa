@@ -19,10 +19,11 @@ type MattressVisualProps = {
 };
 
 /**
- * A cinematic, product-photography-style rendering of the VEXA mattress —
- * built entirely from layered CSS (no imagery yet exists). Reads as a
- * corner/cross-section: quilted fabric top, satin-copper piping at the
- * seam, and a darker echo layer behind implying the gusset's thickness.
+ * The official VEXA ONE — a thick, true two-face slab (top + front/gusset),
+ * built entirely from layered CSS to match the brand's product design
+ * board: vertical channel quilting continuous across both faces, satin
+ * copper piping at their shared seam, and an embroidered copper wordmark
+ * on the front face.
  */
 export function MattressVisual({
   tiltX,
@@ -36,7 +37,7 @@ export function MattressVisual({
   entranceY,
   entranceScale,
 }: MattressVisualProps) {
-  const sheen = useMotionTemplate`radial-gradient(560px circle at ${lightX}% ${lightY}%, rgba(255,255,255,0.14), transparent 60%)`;
+  const sheen = useMotionTemplate`radial-gradient(560px circle at ${lightX}% ${lightY}%, rgba(255,255,255,0.12), transparent 60%)`;
 
   return (
     <motion.div
@@ -57,12 +58,12 @@ export function MattressVisual({
       {/* scroll-linked settle drift — very subtle, almost imperceptible (Scene 04) */}
       <motion.div
         className="relative"
-        style={{ width: "clamp(300px, 58vw, 760px)", aspectRatio: "16 / 10", rotate: settleRotate, y: settleY }}
+        style={{ width: "clamp(270px, 62vw, 860px)", aspectRatio: "100 / 62", rotate: settleRotate, y: settleY }}
       >
-        {/* slow continuous float + gentle base rotation (12-15deg) */}
+        {/* slow continuous float + gentle base rotation (~12deg) */}
         <motion.div
           className="relative h-full w-full"
-          animate={{ y: [0, -16, 0], rotate: [-13, -11.5, -13] }}
+          animate={{ y: [0, -16, 0], rotate: [-12.5, -11.5, -12.5] }}
           transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
         >
           {/* mouse-reactive tilt (the "lighting" layer) */}
@@ -70,18 +71,32 @@ export function MattressVisual({
             className="relative h-full w-full"
             style={{ transformStyle: "preserve-3d", rotateX: tiltX, rotateY: tiltY }}
           >
-            {/* depth echo — the gusset thickness, peeking out to sell the object's height */}
-            <div className="absolute inset-0 translate-x-6 translate-y-8 rounded-[2.75rem] bg-[linear-gradient(160deg,#3d3d42,#151517_75%)] shadow-[0_50px_90px_-35px_rgba(0,0,0,0.75)]" />
+            {/* depth echo — a third side peeking out to sell the object's thickness */}
+            <div className="absolute inset-0 translate-x-5 translate-y-6 rounded-t-[1.7rem] rounded-b-[1.3rem] bg-[linear-gradient(160deg,#38383d,#131315_75%)] shadow-[0_50px_90px_-35px_rgba(0,0,0,0.75)]" />
 
-            {/* satin copper piping shell */}
-            <div className="absolute inset-0 rounded-[2.75rem] bg-[linear-gradient(135deg,#e6bd9d,#c17a4e_45%,#8a5230_100%)] shadow-[0_70px_140px_-45px_rgba(0,0,0,0.8)]">
-              {/* quilted fabric top face, inset to reveal the piping ring */}
-              <div className="absolute inset-[7px] overflow-hidden rounded-[2.35rem] bg-[linear-gradient(160deg,#2b2b2f_0%,#131315_55%,#0a0a0b_100%)]">
-                <div className="mattress-quilt absolute inset-0 opacity-40" />
-                <div className="mattress-weave absolute inset-0 opacity-[0.14]" />
+            {/* the slab itself: top face + front/gusset face, sharing one piped seam */}
+            <div className="absolute inset-0 flex flex-col overflow-hidden rounded-t-[1.75rem] rounded-b-[1.35rem] shadow-[0_70px_140px_-45px_rgba(0,0,0,0.85)]">
+              {/* top face */}
+              <div className="relative h-[72%] w-full overflow-hidden bg-[linear-gradient(160deg,#2f2f33_0%,#17171a_55%,#0a0a0b_100%)]">
+                <div className="mattress-channels absolute inset-0 opacity-[0.55]" />
+                <div className="mattress-knit absolute inset-0 opacity-[0.12]" />
                 <motion.div className="absolute inset-0" style={{ backgroundImage: sheen }} />
-                <div className="absolute inset-0 rounded-[2.35rem] shadow-[inset_0_0_90px_45px_rgba(0,0,0,0.5)]" />
-                <div className="absolute inset-4 rounded-[1.9rem] border border-dashed border-white/[0.08]" />
+                <div className="absolute inset-0 shadow-[inset_0_0_90px_40px_rgba(0,0,0,0.45)]" />
+                <div className="absolute inset-3 rounded-t-[1.4rem] border border-white/[0.06]" />
+              </div>
+
+              {/* satin copper piping — exactly at the seam between the two faces */}
+              <div className="relative z-10 h-[4px] w-full bg-[linear-gradient(90deg,#e6bd9d,#c17a4e_50%,#8a5230_100%)] shadow-[0_1px_2px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.35)]" />
+
+              {/* front / gusset face — same channel quilting continues over the edge */}
+              <div className="relative h-[28%] w-full overflow-hidden bg-[linear-gradient(100deg,#232326_0%,#111113_55%,#0a0a0b_100%)]">
+                <div className="mattress-channels absolute inset-0 opacity-[0.5]" />
+                <div className="absolute inset-0 shadow-[inset_0_10px_24px_-10px_rgba(0,0,0,0.6)]" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="font-sans text-[clamp(0.55rem,1vw,0.85rem)] font-medium uppercase tracking-[0.4em] text-copper-300/80">
+                    Vexa
+                  </span>
+                </div>
               </div>
             </div>
           </motion.div>

@@ -52,7 +52,8 @@ export function CinematicHero() {
   const textPointerEvents = useTransform(textOpacity, (v): string => (v > 0.6 ? "auto" : "none"));
 
   // Scene 04 — near-imperceptible continued rotation once fully settled
-  const settleRotate = useTransform(progress, [0.85, 1], [0, -1.5]);
+  // (kept small so the total stays close to the ~12deg base rotation)
+  const settleRotate = useTransform(progress, [0.85, 1], [0, -0.6]);
   const settleY = useTransform(progress, [0.85, 1], [0, -12]);
 
   return (

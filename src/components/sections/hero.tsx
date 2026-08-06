@@ -121,7 +121,7 @@ export function Hero({
         </div>
       </motion.div>
 
-      <div className="relative z-10 mt-8 flex flex-1 items-end justify-center pb-[6vh] sm:mt-10">
+      <div className="relative z-10 mt-8 flex flex-1 items-end justify-center pb-[15vh] sm:mt-10 sm:pb-[6vh]">
         <MattressVisual
           tiltX={tiltX}
           tiltY={tiltY}
