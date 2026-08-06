@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion, useMotionTemplate, type MotionValue } from "framer-motion";
 
 type MattressVisualProps = {
@@ -18,42 +19,11 @@ type MattressVisualProps = {
   entranceScale: MotionValue<number>;
 };
 
-const COPPER_H = "linear-gradient(90deg,#e6bd9d,#c17a4e 50%,#8a5230 100%)";
-const COPPER_V = "linear-gradient(180deg,#e6bd9d,#c17a4e 50%,#8a5230 100%)";
-
-function VMonogram() {
-  return (
-    <svg viewBox="0 0 32 26" className="h-[26%] w-auto" aria-hidden="true">
-      <path
-        d="M4 2 L16 22 L28 2"
-        fill="none"
-        stroke="#c9895c"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle cx="16" cy="25" r="0.9" fill="#c9895c" />
-    </svg>
-  );
-}
-
-function VexaTag() {
-  return (
-    <div className="rounded-[3px] bg-black/55 px-[10%] py-[6%] ring-1 ring-white/10">
-      <span className="text-[clamp(0.42rem,0.85vw,0.7rem)] font-medium uppercase tracking-[0.4em] text-anthracite-100/90">
-        Vexa
-      </span>
-    </div>
-  );
-}
-
 /**
- * The official VEXA ONE — a true CSS 3D box (not a flat rotated card):
- * three real faces (top, front/long-side, right/short-end) meeting at
- * genuine perspective-correct edges, built to match the brand's approved
- * product photography exactly. Copper piping traces both top seams;
- * channel quilting runs the length of the mattress on top and wraps
- * vertically down the visible sides.
+ * The official VEXA ONE product photograph — animated, not redrawn. The
+ * camera angle, rotation, proportions, and lighting are already baked into
+ * this image; every motion layer here (entrance, mouse-tilt, float,
+ * Scene 04 settle) moves the photo itself rather than reconstructing it.
  */
 export function MattressVisual({
   tiltX,
@@ -67,7 +37,7 @@ export function MattressVisual({
   entranceY,
   entranceScale,
 }: MattressVisualProps) {
-  const sheen = useMotionTemplate`radial-gradient(560px circle at ${lightX}% ${lightY}%, rgba(255,255,255,0.13), transparent 60%)`;
+  const sheen = useMotionTemplate`radial-gradient(620px circle at ${lightX}% ${lightY}%, rgba(255,255,255,0.1), transparent 60%)`;
 
   return (
     <motion.div
@@ -89,100 +59,53 @@ export function MattressVisual({
       <motion.div
         className="relative"
         style={{
-          ["--u" as string]: "clamp(3.1px, 0.58vw, 8.2px)",
-          width: "calc(var(--u) * 100)",
-          height: "calc(var(--u) * 86)",
+          width: "clamp(320px, 62vw, 900px)",
+          aspectRatio: "1536 / 1024",
+          rotate: settleRotate,
           y: settleY,
         }}
       >
-        {/* slow continuous float */}
+        {/* slow continuous float — the photo's own baked-in camera angle needs no extra base rotation */}
         <motion.div
           className="relative h-full w-full"
           style={{ transformStyle: "preserve-3d" }}
-          animate={{ y: [0, -14, 0] }}
+          animate={{ y: [0, -14, 0], rotate: [-0.6, 0.6, -0.6] }}
           transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
         >
-          {/* camera framing: 3/4 perspective + ~12deg roll, matching the reference shot */}
+          {/* mouse-reactive tilt (the "lighting" layer) */}
           <motion.div
-            className="absolute inset-0"
-            style={{ transformStyle: "preserve-3d", rotate: settleRotate }}
+            className="relative h-full w-full"
+            style={{ transformStyle: "preserve-3d", rotateX: tiltX, rotateY: tiltY }}
           >
+            {/*
+              The source photo is a full studio shot (its own walls/floor),
+              not an isolated cutout. Rather than edit the image itself, this
+              mask feathers just its top edge so that background blends into
+              the page's own atmosphere instead of showing a hard rectangle —
+              the mattress itself sits lower in the frame and is untouched.
+            */}
             <div
-              className="absolute inset-0"
+              className="relative h-full w-full"
               style={{
-                transformStyle: "preserve-3d",
-                transform: "rotateX(-18deg) rotateY(-25deg) rotateZ(-12deg)",
+                maskImage: "linear-gradient(to bottom, transparent 0%, black 14%)",
+                WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 14%)",
               }}
             >
-              {/* mouse-reactive tilt (the "lighting" layer) */}
-              <motion.div
-                className="absolute inset-0"
-                style={{ transformStyle: "preserve-3d", rotateX: tiltX, rotateY: tiltY }}
-              >
-                {/* TOP face — W x D */}
-                <div
-                  className="absolute overflow-hidden"
-                  style={{
-                    top: "50%",
-                    left: "50%",
-                    width: "calc(var(--u) * 100)",
-                    height: "calc(var(--u) * 56)",
-                    transform: "translate(-50%, -50%) rotateX(90deg) translateZ(calc(var(--u) * 7.5))",
-                    background: "linear-gradient(135deg, #303034 0%, #17171a 55%, #0a0a0b 100%)",
-                  }}
-                >
-                  <div className="mattress-channels-top absolute inset-0 opacity-[0.5]" />
-                  <motion.div className="absolute inset-0" style={{ backgroundImage: sheen }} />
-                  <div className="absolute inset-0 shadow-[inset_0_0_70px_30px_rgba(0,0,0,0.4)]" />
-                  {/* piping — top/front seam (nudged forward in Z to avoid z-fighting with the front face) */}
-                  <div
-                    className="absolute inset-x-0 bottom-0 h-[5px] shadow-[0_1px_1px_rgba(0,0,0,0.5)]"
-                    style={{ backgroundImage: COPPER_H, transform: "translateZ(2px)" }}
-                  />
-                  {/* piping — top/right seam */}
-                  <div
-                    className="absolute inset-y-0 right-0 w-[5px] shadow-[0_1px_1px_rgba(0,0,0,0.5)]"
-                    style={{ backgroundImage: COPPER_V, transform: "translateZ(2px)" }}
-                  />
-                </div>
-
-                {/* FRONT face (long side) — W x T */}
-                <div
-                  className="absolute overflow-hidden"
-                  style={{
-                    top: "50%",
-                    left: "50%",
-                    width: "calc(var(--u) * 100)",
-                    height: "calc(var(--u) * 15)",
-                    transform: "translate(-50%, -50%) translateZ(calc(var(--u) * 28))",
-                    background: "linear-gradient(180deg, #27272b 0%, #101012 100%)",
-                  }}
-                >
-                  <div className="mattress-channels absolute inset-0 opacity-[0.55]" />
-                  <div className="absolute inset-0 shadow-[inset_0_10px_22px_-10px_rgba(0,0,0,0.6)]" />
-                  <div className="absolute inset-0 flex items-center justify-between px-[9%]">
-                    <VMonogram />
-                    <VexaTag />
-                  </div>
-                </div>
-
-                {/* RIGHT / END face — D x T */}
-                <div
-                  className="absolute overflow-hidden"
-                  style={{
-                    top: "50%",
-                    left: "50%",
-                    width: "calc(var(--u) * 56)",
-                    height: "calc(var(--u) * 15)",
-                    transform: "translate(-50%, -50%) rotateY(90deg) translateZ(calc(var(--u) * 50))",
-                    background: "linear-gradient(180deg, #202024 0%, #0c0c0d 100%)",
-                  }}
-                >
-                  <div className="mattress-channels absolute inset-0 opacity-[0.5]" />
-                  <div className="absolute inset-0 shadow-[inset_0_10px_22px_-10px_rgba(0,0,0,0.6)]" />
-                </div>
-              </motion.div>
+              <Image
+                src="/images/vexa-one-hero.png"
+                alt="VEXA ONE — the official product"
+                fill
+                priority
+                sizes="(min-width: 1024px) 62vw, 90vw"
+                className="select-none object-contain"
+                draggable={false}
+              />
             </div>
+            {/* subtle mouse-reactive sheen over the photo */}
+            <motion.div
+              className="absolute inset-0"
+              style={{ backgroundImage: sheen, mixBlendMode: "overlay" }}
+            />
           </motion.div>
         </motion.div>
       </motion.div>
