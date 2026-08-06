@@ -1,55 +1,93 @@
 "use client";
 
-import Link from "next/link";
-import { motion } from "framer-motion";
+import { useRef, type PointerEvent } from "react";
+import {
+  motion,
+  useMotionValue,
+  useSpring,
+  useTransform,
+  useScroll,
+} from "framer-motion";
 
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
+import { MattressVisual } from "@/components/sections/mattress-visual";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
-const container = {
+const stagger = {
   hidden: {},
   show: {
-    transition: {
-      staggerChildren: 0.14,
-      delayChildren: 0.2,
-    },
+    transition: { staggerChildren: 0.16, delayChildren: 0.3 },
   },
 };
 
-const item = {
-  hidden: { opacity: 0, y: 22 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.9, ease: EASE },
-  },
+const fadeUp = {
+  hidden: { opacity: 0, y: 18 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.9, ease: EASE } },
+};
+
+const lineReveal = {
+  hidden: { y: "100%" },
+  show: { y: "0%", transition: { duration: 1.1, ease: EASE } },
 };
 
 export function Hero() {
+  const sectionRef = useRef<HTMLElement>(null);
+
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const springX = useSpring(mouseX, { stiffness: 60, damping: 20, mass: 0.6 });
+  const springY = useSpring(mouseY, { stiffness: 60, damping: 20, mass: 0.6 });
+
+  const tiltX = useTransform(springY, [-0.5, 0.5], [6, -6]);
+  const tiltY = useTransform(springX, [-0.5, 0.5], [-8, 8]);
+  const lightX = useTransform(springX, [-0.5, 0.5], [35, 65]);
+  const lightY = useTransform(springY, [-0.5, 0.5], [30, 60]);
+
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end start"],
+  });
+  const mattressY = useTransform(scrollYProgress, [0, 1], [0, 140]);
+  const mattressOpacity = useTransform(scrollYProgress, [0, 0.75, 1], [1, 1, 0.35]);
+
+  function handlePointerMove(e: PointerEvent<HTMLElement>) {
+    if (e.pointerType !== "mouse") return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    mouseX.set((e.clientX - rect.left) / rect.width - 0.5);
+    mouseY.set((e.clientY - rect.top) / rect.height - 0.5);
+  }
+
+  function handlePointerLeave() {
+    mouseX.set(0);
+    mouseY.set(0);
+  }
+
   return (
     <section
       id="top"
-      className="bg-grain relative flex h-svh min-h-[720px] w-full items-center justify-center overflow-hidden bg-black"
+      ref={sectionRef}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
+      className="bg-grain relative flex min-h-[112svh] w-full flex-col overflow-hidden bg-black lg:min-h-[124svh]"
     >
-      {/* Ambient background */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-      >
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_120%,var(--color-anthracite-900),transparent)]" />
-        <div className="absolute left-1/2 top-[8%] h-[420px] w-[620px] -translate-x-1/2 rounded-full bg-copper-500/10 blur-[140px]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_0%,var(--color-black-900)_100%)] opacity-60" />
+      {/* Atmosphere — never flat black: layered soft gradients */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_18%_-8%,var(--color-anthracite-800),transparent)] opacity-70" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_60%_at_84%_6%,var(--color-anthracite-900),transparent)]" />
+        <div className="absolute inset-x-0 bottom-0 h-[65%] bg-[radial-gradient(ellipse_85%_70%_at_50%_100%,rgba(138,82,48,0.16),transparent_70%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_0%,var(--color-black-900)_92%)] opacity-70" />
+        <div className="absolute inset-0 shadow-[inset_0_0_180px_60px_rgba(0,0,0,0.55)]" />
       </div>
 
       <motion.div
-        variants={container}
+        variants={stagger}
         initial="hidden"
         animate="show"
-        className="relative z-10 flex w-full max-w-4xl flex-col items-center px-6 text-center"
+        className="relative z-10 flex w-full flex-col items-center px-6 pt-40 text-center sm:pt-48 lg:pt-52"
       >
-        <motion.div variants={item}>
+        <motion.div variants={fadeUp}>
           <Logo
             markClassName="h-4 w-4 sm:h-5 sm:w-5"
             wordmarkClassName="text-base sm:text-lg"
@@ -57,46 +95,65 @@ export function Hero() {
         </motion.div>
 
         <motion.div
-          variants={item}
-          className="mt-10 flex items-center gap-3 text-copper-300/90 sm:mt-12"
+          variants={fadeUp}
+          className="mt-9 flex items-center gap-3 text-copper-300/90 sm:mt-11"
         >
-          <span className="h-px w-8 bg-copper-400/60" />
-          <span className="text-[11px] font-medium uppercase tracking-[0.4em] sm:text-xs">
+          <span className="h-px w-8 bg-copper-400/50" />
+          <span className="text-[10.5px] font-medium uppercase tracking-[0.42em] sm:text-xs">
             The Art of Sleeping
           </span>
-          <span className="h-px w-8 bg-copper-400/60" />
+          <span className="h-px w-8 bg-copper-400/50" />
         </motion.div>
 
         <motion.h1
-          variants={item}
-          className="text-balance mt-8 max-w-3xl text-[clamp(2.1rem,6.4vw,5.25rem)] font-light leading-[1.08] tracking-tight text-white sm:mt-10"
+          variants={fadeUp}
+          className="mt-8 max-w-4xl text-[clamp(2.4rem,6.8vw,5.75rem)] font-light leading-[1.04] tracking-[-0.01em] text-white sm:mt-10"
         >
-          Not just a mattress.
-          <br />
-          A new standard of{" "}
-          <span className="font-display italic font-normal text-copper-200">
-            sleep.
+          <span className="block overflow-hidden">
+            <motion.span variants={lineReveal} className="block">
+              Not just a mattress.
+            </motion.span>
+          </span>
+          <span className="block overflow-hidden pb-1">
+            <motion.span variants={lineReveal} className="block">
+              A new standard of{" "}
+              <span className="font-display italic font-normal text-copper-200">
+                sleep.
+              </span>
+            </motion.span>
           </span>
         </motion.h1>
 
         <motion.div
-          variants={item}
-          className="mt-12 flex w-full flex-col items-center gap-4 sm:mt-14 sm:w-auto sm:flex-row sm:justify-center"
+          variants={fadeUp}
+          className="mt-11 flex w-full flex-col items-center gap-4 sm:mt-14 sm:w-auto sm:flex-row sm:justify-center sm:gap-5"
         >
-          <Button asChild size="lg" className="w-full sm:w-auto">
-            <Link href="/one">Discover VEXA</Link>
+          <Button href="/one" size="lg" icon className="w-full sm:w-auto">
+            Discover VEXA
           </Button>
-          <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
-            <Link href="/signature">Explore ONE &amp; SIGNATURE</Link>
+          <Button
+            href="/signature"
+            variant="outline"
+            size="lg"
+            className="w-full sm:w-auto"
+          >
+            Explore ONE &amp; SIGNATURE
           </Button>
         </motion.div>
       </motion.div>
 
       <motion.div
+        style={{ y: mattressY, opacity: mattressOpacity }}
+        className="relative z-10 mt-16 flex flex-1 items-end justify-center pb-[8vh] sm:mt-20"
+      >
+        <MattressVisual tiltX={tiltX} tiltY={tiltY} lightX={lightX} lightY={lightY} />
+      </motion.div>
+
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.2, duration: 1 }}
-        className="absolute inset-x-0 bottom-8 z-10 flex flex-col items-center gap-3 sm:bottom-10"
+        transition={{ delay: 1.6, duration: 1 }}
+        className="absolute inset-x-0 bottom-8 z-20 flex flex-col items-center gap-3 sm:bottom-10"
       >
         <span className="text-[10px] font-medium uppercase tracking-[0.35em] text-anthracite-300">
           Scroll

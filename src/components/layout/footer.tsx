@@ -28,7 +28,11 @@ const LEGAL_LINKS = [
 export function Footer() {
   return (
     <footer id="contact" className="relative border-t border-white/10 bg-black">
-      <div className="mx-auto max-w-[1600px] px-6 py-20 sm:px-10 sm:py-24 lg:px-16">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_15%_0%,var(--color-anthracite-900),transparent)] opacity-60"
+      />
+      <div className="relative mx-auto max-w-[1600px] px-8 py-20 sm:px-12 sm:py-24 lg:px-20">
         <div className="grid grid-cols-1 gap-16 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div className="flex flex-col gap-6">
             <Logo wordmarkClassName="text-base" markClassName="h-4 w-4" />

@@ -12,7 +12,7 @@ const NAV_LINKS = [
   { label: "ONE", href: "/one" },
   { label: "Signature", href: "/signature" },
   { label: "Craftsmanship", href: "/craftsmanship" },
-  { label: "Contact", href: "#contact" },
+  { label: "Journal", href: "/journal" },
 ];
 
 export function Navbar() {
@@ -47,24 +47,23 @@ export function Navbar() {
             : "border-b border-transparent bg-transparent",
       )}
     >
-      <div className="mx-auto flex h-18 max-w-[1600px] items-center justify-between px-6 sm:px-10 lg:px-16">
+      <div className="mx-auto flex h-20 max-w-[1600px] items-center justify-between px-8 sm:px-12 lg:px-20">
         <Link
           href="/"
-          className="text-white transition-opacity hover:opacity-70"
+          className="text-white transition-opacity duration-300 hover:opacity-60"
           onClick={() => setOpen(false)}
         >
           <Logo wordmarkClassName="text-sm" markClassName="h-3.5 w-3.5" />
         </Link>
 
-        <nav className="hidden items-center gap-10 md:flex">
+        <nav className="hidden items-center gap-16 md:flex">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.label}
               href={link.href}
-              className="group relative text-[11px] font-medium uppercase tracking-[0.2em] text-anthracite-200 transition-colors duration-300 hover:text-white"
+              className="text-[10.5px] font-medium uppercase tracking-[0.24em] text-anthracite-300 transition-colors duration-500 hover:text-white"
             >
               {link.label}
-              <span className="absolute -bottom-1 left-0 h-px w-0 bg-copper-400 transition-all duration-300 group-hover:w-full" />
             </Link>
           ))}
         </nav>
