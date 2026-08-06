@@ -132,12 +132,14 @@ body {
 }
 
 /*
- * VEXA ONE — vertical channel quilting for the hero product visual.
- * Simulates padded fabric tubes running the length of the mattress: each
- * repeat is a dark seam, a rising highlight, and a soft falloff, so it
- * reads as rounded channels rather than a flat printed stripe. Used
- * identically on the top and front faces so the ribs appear continuous
- * across the piped seam between them.
+ * VEXA ONE — channel quilting for the hero product visual. Simulates
+ * padded fabric tubes: each repeat is a dark seam, a rising highlight,
+ * and a soft falloff, so it reads as rounded channels rather than a flat
+ * printed stripe. The two variants share the same rhythm so ribs read as
+ * continuous across the piped seams of the 3D box:
+ *  - .mattress-channels     — vertical tubes (front / end faces)
+ *  - .mattress-channels-top — the same tubes running the length of the
+ *                             mattress, seen from above on the top face
  */
 .mattress-channels {
   background-image: repeating-linear-gradient(
@@ -148,6 +150,18 @@ body {
     rgba(255, 255, 255, 0.03) 16px,
     rgba(0, 0, 0, 0.22) 24px,
     rgba(0, 0, 0, 0.45) 30px
+  );
+}
+
+.mattress-channels-top {
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.4) 0px,
+    rgba(0, 0, 0, 0.18) 3px,
+    rgba(255, 255, 255, 0.09) 10px,
+    rgba(255, 255, 255, 0.02) 16px,
+    rgba(0, 0, 0, 0.18) 24px,
+    rgba(0, 0, 0, 0.4) 30px
   );
 }
 

@@ -18,12 +18,42 @@ type MattressVisualProps = {
   entranceScale: MotionValue<number>;
 };
 
+const COPPER_H = "linear-gradient(90deg,#e6bd9d,#c17a4e 50%,#8a5230 100%)";
+const COPPER_V = "linear-gradient(180deg,#e6bd9d,#c17a4e 50%,#8a5230 100%)";
+
+function VMonogram() {
+  return (
+    <svg viewBox="0 0 32 26" className="h-[26%] w-auto" aria-hidden="true">
+      <path
+        d="M4 2 L16 22 L28 2"
+        fill="none"
+        stroke="#c9895c"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="16" cy="25" r="0.9" fill="#c9895c" />
+    </svg>
+  );
+}
+
+function VexaTag() {
+  return (
+    <div className="rounded-[3px] bg-black/55 px-[10%] py-[6%] ring-1 ring-white/10">
+      <span className="text-[clamp(0.42rem,0.85vw,0.7rem)] font-medium uppercase tracking-[0.4em] text-anthracite-100/90">
+        Vexa
+      </span>
+    </div>
+  );
+}
+
 /**
- * The official VEXA ONE — a thick, true two-face slab (top + front/gusset),
- * built entirely from layered CSS to match the brand's product design
- * board: vertical channel quilting continuous across both faces, satin
- * copper piping at their shared seam, and an embroidered copper wordmark
- * on the front face.
+ * The official VEXA ONE — a true CSS 3D box (not a flat rotated card):
+ * three real faces (top, front/long-side, right/short-end) meeting at
+ * genuine perspective-correct edges, built to match the brand's approved
+ * product photography exactly. Copper piping traces both top seams;
+ * channel quilting runs the length of the mattress on top and wraps
+ * vertically down the visible sides.
  */
 export function MattressVisual({
   tiltX,
@@ -37,14 +67,14 @@ export function MattressVisual({
   entranceY,
   entranceScale,
 }: MattressVisualProps) {
-  const sheen = useMotionTemplate`radial-gradient(560px circle at ${lightX}% ${lightY}%, rgba(255,255,255,0.12), transparent 60%)`;
+  const sheen = useMotionTemplate`radial-gradient(560px circle at ${lightX}% ${lightY}%, rgba(255,255,255,0.13), transparent 60%)`;
 
   return (
     <motion.div
       aria-hidden="true"
       className="pointer-events-none relative flex w-full items-center justify-center"
       style={{
-        perspective: "2400px",
+        perspective: "2600px",
         opacity: entranceOpacity,
         x: entranceX,
         y: entranceY,
@@ -58,46 +88,100 @@ export function MattressVisual({
       {/* scroll-linked settle drift — very subtle, almost imperceptible (Scene 04) */}
       <motion.div
         className="relative"
-        style={{ width: "clamp(270px, 62vw, 860px)", aspectRatio: "100 / 62", rotate: settleRotate, y: settleY }}
+        style={{
+          ["--u" as string]: "clamp(3.1px, 0.58vw, 8.2px)",
+          width: "calc(var(--u) * 100)",
+          height: "calc(var(--u) * 86)",
+          y: settleY,
+        }}
       >
-        {/* slow continuous float + gentle base rotation (~12deg) */}
+        {/* slow continuous float */}
         <motion.div
           className="relative h-full w-full"
-          animate={{ y: [0, -16, 0], rotate: [-12.5, -11.5, -12.5] }}
+          style={{ transformStyle: "preserve-3d" }}
+          animate={{ y: [0, -14, 0] }}
           transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
         >
-          {/* mouse-reactive tilt (the "lighting" layer) */}
+          {/* camera framing: 3/4 perspective + ~12deg roll, matching the reference shot */}
           <motion.div
-            className="relative h-full w-full"
-            style={{ transformStyle: "preserve-3d", rotateX: tiltX, rotateY: tiltY }}
+            className="absolute inset-0"
+            style={{ transformStyle: "preserve-3d", rotate: settleRotate }}
           >
-            {/* depth echo — a third side peeking out to sell the object's thickness */}
-            <div className="absolute inset-0 translate-x-5 translate-y-6 rounded-t-[1.7rem] rounded-b-[1.3rem] bg-[linear-gradient(160deg,#38383d,#131315_75%)] shadow-[0_50px_90px_-35px_rgba(0,0,0,0.75)]" />
-
-            {/* the slab itself: top face + front/gusset face, sharing one piped seam */}
-            <div className="absolute inset-0 flex flex-col overflow-hidden rounded-t-[1.75rem] rounded-b-[1.35rem] shadow-[0_70px_140px_-45px_rgba(0,0,0,0.85)]">
-              {/* top face */}
-              <div className="relative h-[72%] w-full overflow-hidden bg-[linear-gradient(160deg,#2f2f33_0%,#17171a_55%,#0a0a0b_100%)]">
-                <div className="mattress-channels absolute inset-0 opacity-[0.55]" />
-                <div className="mattress-knit absolute inset-0 opacity-[0.12]" />
-                <motion.div className="absolute inset-0" style={{ backgroundImage: sheen }} />
-                <div className="absolute inset-0 shadow-[inset_0_0_90px_40px_rgba(0,0,0,0.45)]" />
-                <div className="absolute inset-3 rounded-t-[1.4rem] border border-white/[0.06]" />
-              </div>
-
-              {/* satin copper piping — exactly at the seam between the two faces */}
-              <div className="relative z-10 h-[4px] w-full bg-[linear-gradient(90deg,#e6bd9d,#c17a4e_50%,#8a5230_100%)] shadow-[0_1px_2px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.35)]" />
-
-              {/* front / gusset face — same channel quilting continues over the edge */}
-              <div className="relative h-[28%] w-full overflow-hidden bg-[linear-gradient(100deg,#232326_0%,#111113_55%,#0a0a0b_100%)]">
-                <div className="mattress-channels absolute inset-0 opacity-[0.5]" />
-                <div className="absolute inset-0 shadow-[inset_0_10px_24px_-10px_rgba(0,0,0,0.6)]" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="font-sans text-[clamp(0.55rem,1vw,0.85rem)] font-medium uppercase tracking-[0.4em] text-copper-300/80">
-                    Vexa
-                  </span>
+            <div
+              className="absolute inset-0"
+              style={{
+                transformStyle: "preserve-3d",
+                transform: "rotateX(-18deg) rotateY(-25deg) rotateZ(-12deg)",
+              }}
+            >
+              {/* mouse-reactive tilt (the "lighting" layer) */}
+              <motion.div
+                className="absolute inset-0"
+                style={{ transformStyle: "preserve-3d", rotateX: tiltX, rotateY: tiltY }}
+              >
+                {/* TOP face — W x D */}
+                <div
+                  className="absolute overflow-hidden"
+                  style={{
+                    top: "50%",
+                    left: "50%",
+                    width: "calc(var(--u) * 100)",
+                    height: "calc(var(--u) * 56)",
+                    transform: "translate(-50%, -50%) rotateX(90deg) translateZ(calc(var(--u) * 7.5))",
+                    background: "linear-gradient(135deg, #303034 0%, #17171a 55%, #0a0a0b 100%)",
+                  }}
+                >
+                  <div className="mattress-channels-top absolute inset-0 opacity-[0.5]" />
+                  <motion.div className="absolute inset-0" style={{ backgroundImage: sheen }} />
+                  <div className="absolute inset-0 shadow-[inset_0_0_70px_30px_rgba(0,0,0,0.4)]" />
+                  {/* piping — top/front seam (nudged forward in Z to avoid z-fighting with the front face) */}
+                  <div
+                    className="absolute inset-x-0 bottom-0 h-[5px] shadow-[0_1px_1px_rgba(0,0,0,0.5)]"
+                    style={{ backgroundImage: COPPER_H, transform: "translateZ(2px)" }}
+                  />
+                  {/* piping — top/right seam */}
+                  <div
+                    className="absolute inset-y-0 right-0 w-[5px] shadow-[0_1px_1px_rgba(0,0,0,0.5)]"
+                    style={{ backgroundImage: COPPER_V, transform: "translateZ(2px)" }}
+                  />
                 </div>
-              </div>
+
+                {/* FRONT face (long side) — W x T */}
+                <div
+                  className="absolute overflow-hidden"
+                  style={{
+                    top: "50%",
+                    left: "50%",
+                    width: "calc(var(--u) * 100)",
+                    height: "calc(var(--u) * 15)",
+                    transform: "translate(-50%, -50%) translateZ(calc(var(--u) * 28))",
+                    background: "linear-gradient(180deg, #27272b 0%, #101012 100%)",
+                  }}
+                >
+                  <div className="mattress-channels absolute inset-0 opacity-[0.55]" />
+                  <div className="absolute inset-0 shadow-[inset_0_10px_22px_-10px_rgba(0,0,0,0.6)]" />
+                  <div className="absolute inset-0 flex items-center justify-between px-[9%]">
+                    <VMonogram />
+                    <VexaTag />
+                  </div>
+                </div>
+
+                {/* RIGHT / END face — D x T */}
+                <div
+                  className="absolute overflow-hidden"
+                  style={{
+                    top: "50%",
+                    left: "50%",
+                    width: "calc(var(--u) * 56)",
+                    height: "calc(var(--u) * 15)",
+                    transform: "translate(-50%, -50%) rotateY(90deg) translateZ(calc(var(--u) * 50))",
+                    background: "linear-gradient(180deg, #202024 0%, #0c0c0d 100%)",
+                  }}
+                >
+                  <div className="mattress-channels absolute inset-0 opacity-[0.5]" />
+                  <div className="absolute inset-0 shadow-[inset_0_10px_22px_-10px_rgba(0,0,0,0.6)]" />
+                </div>
+              </motion.div>
             </div>
           </motion.div>
         </motion.div>
@@ -105,7 +189,7 @@ export function MattressVisual({
 
       {/* grounding contact shadow — sells the "floating" illusion */}
       <motion.div
-        className="absolute left-1/2 top-[80%] h-8 w-[54%] -translate-x-1/2 rounded-full bg-black/70 blur-2xl"
+        className="absolute left-1/2 top-[78%] h-8 w-[50%] -translate-x-1/2 rounded-full bg-black/70 blur-2xl"
         animate={{ scaleX: [1, 0.9, 1], opacity: [0.5, 0.35, 0.5] }}
         transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
       />
