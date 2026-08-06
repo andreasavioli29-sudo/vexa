@@ -1,86 +1,25 @@
 "use client";
 
-import { type PointerEvent } from "react";
-import {
-  motion,
-  useMotionValue,
-  useSpring,
-  useTransform,
-  type MotionValue,
-} from "framer-motion";
+import { motion, type MotionValue } from "framer-motion";
 
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
-import { MattressVisual } from "@/components/sections/mattress-visual";
 
 type HeroProps = {
-  atmosphereOpacity: MotionValue<number>;
   textOpacity: MotionValue<number>;
   textPointerEvents: MotionValue<string>;
-  mattressOpacity: MotionValue<number>;
-  mattressY: MotionValue<string>;
-  settleRotate: MotionValue<number>;
-  settleY: MotionValue<number>;
 };
 
 /**
- * Scene 02/03 — the product world. Everything here arrives in its own time,
- * driven by CinematicHero's scroll progress: the mattress fades in mostly
- * hidden below the frame and slides upward into full view, the black studio
- * atmosphere settles in behind it, and the headline/CTAs arrive last, once
- * the object is already in place — never as a single all-at-once cross-fade.
+ * The headline/CTAs — the last layer to arrive in CinematicHero's single
+ * continuous shot, once the mattress has already lifted, rotated, and
+ * settled centered. Text overlay only; the black studio atmosphere and the
+ * mattress itself both live directly in CinematicHero, painted in the
+ * correct order behind this, never a separate section of their own.
  */
-export function Hero({
-  atmosphereOpacity,
-  textOpacity,
-  textPointerEvents,
-  mattressOpacity,
-  mattressY,
-  settleRotate,
-  settleY,
-}: HeroProps) {
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const springX = useSpring(mouseX, { stiffness: 60, damping: 20, mass: 0.6 });
-  const springY = useSpring(mouseY, { stiffness: 60, damping: 20, mass: 0.6 });
-
-  const tiltX = useTransform(springY, [-0.5, 0.5], [6, -6]);
-  const tiltY = useTransform(springX, [-0.5, 0.5], [-8, 8]);
-  const lightX = useTransform(springX, [-0.5, 0.5], [35, 65]);
-  const lightY = useTransform(springY, [-0.5, 0.5], [30, 60]);
-
-  function handlePointerMove(e: PointerEvent<HTMLElement>) {
-    if (e.pointerType !== "mouse") return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    mouseX.set((e.clientX - rect.left) / rect.width - 0.5);
-    mouseY.set((e.clientY - rect.top) / rect.height - 0.5);
-  }
-
-  function handlePointerLeave() {
-    mouseX.set(0);
-    mouseY.set(0);
-  }
-
+export function Hero({ textOpacity, textPointerEvents }: HeroProps) {
   return (
-    <section
-      id="top"
-      onPointerMove={handlePointerMove}
-      onPointerLeave={handlePointerLeave}
-      className="bg-grain relative flex h-full w-full flex-col overflow-hidden"
-    >
-      {/* Atmosphere — never flat black: layered soft gradients, arrives once the room has gone dark */}
-      <motion.div
-        aria-hidden="true"
-        style={{ opacity: atmosphereOpacity }}
-        className="pointer-events-none absolute inset-0 bg-black"
-      >
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_18%_-8%,var(--color-anthracite-800),transparent)] opacity-70" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_60%_at_84%_6%,var(--color-anthracite-900),transparent)]" />
-        <div className="absolute inset-x-0 bottom-0 h-[65%] bg-[radial-gradient(ellipse_85%_70%_at_50%_100%,rgba(138,82,48,0.16),transparent_70%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_0%,var(--color-black-900)_92%)] opacity-70" />
-        <div className="absolute inset-0 shadow-[inset_0_0_180px_60px_rgba(0,0,0,0.55)]" />
-      </motion.div>
-
+    <section id="top" className="pointer-events-none relative h-full w-full">
       <motion.div
         style={{ opacity: textOpacity, pointerEvents: textPointerEvents }}
         className="relative z-10 flex w-full flex-col items-center px-6 pt-32 text-center sm:pt-36 lg:pt-40"
@@ -103,41 +42,19 @@ export function Hero({
         </h1>
 
         <div className="mt-10 flex w-full flex-col items-center gap-4 sm:mt-12 sm:w-auto sm:flex-row sm:justify-center sm:gap-5">
-          <Button href="/one" size="lg" icon className="w-full sm:w-auto">
+          <Button href="/one" size="lg" icon className="pointer-events-auto w-full sm:w-auto">
             Discover VEXA
           </Button>
           <Button
             href="/signature"
             variant="outline"
             size="lg"
-            className="w-full sm:w-auto"
+            className="pointer-events-auto w-full sm:w-auto"
           >
             Explore ONE &amp; SIGNATURE
           </Button>
         </div>
       </motion.div>
-
-      {/*
-        No fixed-height / flex-1 box here on purpose: sizing this against
-        whatever vertical space remains would clip the photo (the previous
-        bug). Instead this is a plain, unconstrained flex row — the image
-        keeps its true aspect ratio at its own natural size, and the
-        entrance reveal (mostly hidden below the frame, sliding up to fully
-        visible) is done entirely with the `y` transform inside
-        MattressVisual, not by cropping a container.
-      */}
-      <div className="relative z-10 mt-6 flex w-full justify-center sm:mt-8">
-        <MattressVisual
-          tiltX={tiltX}
-          tiltY={tiltY}
-          lightX={lightX}
-          lightY={lightY}
-          settleRotate={settleRotate}
-          settleY={settleY}
-          entranceOpacity={mattressOpacity}
-          entranceY={mattressY}
-        />
-      </div>
 
       <motion.div
         style={{ opacity: textOpacity }}
