@@ -7,10 +7,10 @@ import { IntroScene } from "@/components/sections/intro-scene";
 import { Hero } from "@/components/sections/hero";
 
 /**
- * Scene 01 -> 02/03 in one scroll-scrubbed, pinned sequence:
- * an alpine villa at sunrise dissolves as its bed detaches, rotates and
- * becomes the floating product hero on matte black. No abrupt cuts —
- * everything is driven by real scroll position, not time.
+ * Scene 01 -> 02/03 in one scroll-scrubbed, pinned sequence: the client's
+ * own villa photograph dissolves — camera pushing in toward the bed — into
+ * matte black, handing off to the floating product mattress. No abrupt
+ * cuts — everything is driven by real scroll position, not time.
  */
 export function CinematicHero() {
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -27,22 +27,17 @@ export function CinematicHero() {
     ],
   });
 
-  // Scene 01 exit
-  const introOpacity = useTransform(progress, [0, 0.32, 0.48], [1, 1, 0]);
-  const introScale = useTransform(progress, [0, 0.48], [1, 1.06]);
-  const introBlur = useTransform(progress, [0.18, 0.48], [0, 12]);
-
-  // The bed detaches and lifts, handing off to the floating mattress
-  const bedRotate = useTransform(progress, [0.26, 0.48], [0, -13]);
-  const bedLift = useTransform(progress, [0.26, 0.48], [0, -70]);
-  const bedOpacity = useTransform(progress, [0.38, 0.5], [1, 0]);
+  // Scene 01 exit — camera pushes in toward the bed as the room dissolves
+  const introOpacity = useTransform(progress, [0, 0.32, 0.5], [1, 1, 0]);
+  const photoScale = useTransform(progress, [0, 0.5], [1, 1.3]);
+  const introBlur = useTransform(progress, [0.15, 0.5], [0, 14]);
 
   // Sunrise dissolves to matte black studio atmosphere
-  const blackoutOpacity = useTransform(progress, [0.3, 0.55], [0, 1]);
+  const blackoutOpacity = useTransform(progress, [0.3, 0.58], [0, 1]);
 
-  // Scene 02/03 entrance
-  const heroOpacity = useTransform(progress, [0.38, 0.58], [0, 1]);
-  const heroScale = useTransform(progress, [0.38, 0.58], [0.96, 1]);
+  // Scene 02/03 entrance — the floating mattress
+  const heroOpacity = useTransform(progress, [0.4, 0.62], [0, 1]);
+  const heroScale = useTransform(progress, [0.4, 0.62], [0.96, 1]);
   const heroPointerEvents = useTransform(heroOpacity, (v) => (v > 0.6 ? "auto" : "none"));
 
   // Scene 04 — near-imperceptible continued rotation once settled, tied to scroll
@@ -52,14 +47,7 @@ export function CinematicHero() {
   return (
     <div ref={wrapperRef} className="relative h-[220vh] w-full sm:h-[260vh]">
       <div className="sticky top-0 h-svh w-full overflow-hidden">
-        <IntroScene
-          opacity={introOpacity}
-          scale={introScale}
-          blur={introBlur}
-          bedRotate={bedRotate}
-          bedLift={bedLift}
-          bedOpacity={bedOpacity}
-        />
+        <IntroScene opacity={introOpacity} photoScale={photoScale} blur={introBlur} />
 
         <motion.div
           aria-hidden="true"
