@@ -1,0 +1,132 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------ */
+/* VEXA Design System — tokens                                         */
+/* ------------------------------------------------------------------ */
+
+:root {
+  --background: #050505;
+  --foreground: #f7f6f4;
+
+  /* Deep black scale */
+  --color-black-950: #030303;
+  --color-black-900: #050505;
+  --color-black-800: #0a0a0b;
+  --color-black-700: #101012;
+
+  /* Anthracite (grigio antracite) scale */
+  --color-anthracite-900: #1c1c1e;
+  --color-anthracite-800: #232326;
+  --color-anthracite-700: #2e2e32;
+  --color-anthracite-600: #3d3d42;
+  --color-anthracite-500: #55555c;
+  --color-anthracite-400: #7a7a82;
+  --color-anthracite-300: #a3a3ab;
+  --color-anthracite-200: #cccccf;
+  --color-anthracite-100: #e8e8e9;
+
+  /* Satin copper accent */
+  --color-copper-600: #8a5230;
+  --color-copper-500: #a8623a;
+  --color-copper-400: #c17a4e;
+  --color-copper-300: #d59a70;
+  --color-copper-200: #e6bd9d;
+  --color-copper-100: #f3ddc7;
+
+  --radius: 0.25rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-black: var(--color-black-900);
+  --color-black-950: var(--color-black-950);
+  --color-black-900: var(--color-black-900);
+  --color-black-800: var(--color-black-800);
+  --color-black-700: var(--color-black-700);
+
+  --color-anthracite-900: var(--color-anthracite-900);
+  --color-anthracite-800: var(--color-anthracite-800);
+  --color-anthracite-700: var(--color-anthracite-700);
+  --color-anthracite-600: var(--color-anthracite-600);
+  --color-anthracite-500: var(--color-anthracite-500);
+  --color-anthracite-400: var(--color-anthracite-400);
+  --color-anthracite-300: var(--color-anthracite-300);
+  --color-anthracite-200: var(--color-anthracite-200);
+  --color-anthracite-100: var(--color-anthracite-100);
+
+  --color-copper-600: var(--color-copper-600);
+  --color-copper-500: var(--color-copper-500);
+  --color-copper-400: var(--color-copper-400);
+  --color-copper-300: var(--color-copper-300);
+  --color-copper-200: var(--color-copper-200);
+  --color-copper-100: var(--color-copper-100);
+
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
+
+  --animate-fade-up: fade-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-marquee: marquee 32s linear infinite;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Base                                                                 */
+/* ------------------------------------------------------------------ */
+
+* {
+  border-color: var(--color-anthracite-800);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: "ss01" 1, "cv01" 1;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--color-copper-400) 35%, transparent);
+  color: var(--foreground);
+}
+
+/* Subtle premium film-grain overlay, used behind hero/dark sections */
+.bg-grain {
+  position: relative;
+}
+
+.bg-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
