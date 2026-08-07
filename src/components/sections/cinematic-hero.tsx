@@ -20,6 +20,12 @@ import { EASE_BREATH } from "@/lib/motion";
  * left/top the IntroScene vignette closes around) from the moment it
  * appears, and only then animates to centered. Everything is driven by one
  * scroll progress value across a single pinned viewport.
+ *
+ * The wrapper's height is longer than the reveal alone needs — the reveal
+ * settling into rest is the middle of this shot, not the end of it. The
+ * added length is the product's own story: the camera continuing to push
+ * in, hold, and reframe across the object after it arrives, all driven by
+ * the same single progress value (see useHeroTimeline).
  */
 export function CinematicHero() {
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -41,7 +47,7 @@ export function CinematicHero() {
   const pointerTilt = usePointerTilt();
 
   return (
-    <div ref={wrapperRef} className="relative h-[220vh] w-full sm:h-[260vh]">
+    <div ref={wrapperRef} className="relative h-[380vh] w-full sm:h-[420vh]">
       <div
         onPointerMove={pointerTilt.onPointerMove}
         onPointerLeave={pointerTilt.onPointerLeave}

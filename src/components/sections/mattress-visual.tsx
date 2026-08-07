@@ -35,6 +35,10 @@ type MattressVisualProps = {
   revealBlur: MotionValue<number>;
   /** Position (%) of a directional light discovering the object, edge to silhouette. */
   lightSweep: MotionValue<number>;
+  /** transform-origin X (%) — where the post-reveal camera pushes expand from, reframing which part of the object they read as "moving toward." */
+  detailOriginX: MotionValue<number>;
+  /** transform-origin Y (%), paired with detailOriginX. */
+  detailOriginY: MotionValue<number>;
 };
 
 /**
@@ -52,6 +56,14 @@ type MattressVisualProps = {
  * underneath it throughout, so the quilting and edge trim keep reading as
  * volume rather than a flat photograph, exactly the way a real studio
  * light would sculpt it.
+ *
+ * The reveal isn't the end of this component's story either. Once at rest,
+ * `scale` keeps going — pushing in past presentation size onto a specific
+ * point, holding, reframing to another, holding again, then pulling back
+ * out — with `detailOriginX`/`detailOriginY` deciding which part of the
+ * object each push expands from. `posLeft`/`posTop`/`rotate` never move
+ * again once the reveal settles: every later beat is the camera choosing
+ * where to look, not the object performing for the camera.
  */
 export function MattressVisual({
   tiltX,
@@ -67,10 +79,13 @@ export function MattressVisual({
   revealAperture,
   revealBlur,
   lightSweep,
+  detailOriginX,
+  detailOriginY,
 }: MattressVisualProps) {
   const markLoaded = useMarkHeroAssetLoaded();
   const reduceMotion = useReducedMotion();
   const sheen = useMotionTemplate`radial-gradient(620px circle at ${lightX}% ${lightY}%, rgba(255,255,255,0.1), transparent 60%)`;
+  const detailOrigin = useMotionTemplate`${detailOriginX}% ${detailOriginY}%`;
   // Centered on the object's own material detail (the stitching + copper
   // edge trim sit dead-center of this photo) — the aperture that opens
   // during the reveal, not a rectangle appearing.
@@ -94,6 +109,7 @@ export function MattressVisual({
           y: "-50%",
           rotate,
           scale,
+          transformOrigin: detailOrigin,
           opacity,
           perspective: "2600px",
           // Keeps the photo's true 1536:1024 aspect ratio (never cropped),
