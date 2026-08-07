@@ -8,10 +8,12 @@ export type HeroTimeline = {
   intro: {
     photoScale: MotionValue<number>;
     vignetteHole: MotionValue<number>;
+    /** Brightness multiplier on the villa photo itself — the room's light fading, not a cover appearing over it. */
+    villaDim: MotionValue<number>;
+    /** Saturation multiplier, draining color alongside brightness as the light goes. */
+    villaSaturate: MotionValue<number>;
   };
   transition: {
-    blackoutOpacity: MotionValue<number>;
-    atmosphereOpacity: MotionValue<number>;
     /** A whisper of parallax on the studio backdrop as the mattress settles — the camera is still quietly alive. */
     atmosphereDriftY: MotionValue<number>;
   };
@@ -42,17 +44,22 @@ export type HeroTimeline = {
 };
 
 /**
- * The single source of truth for CinematicHero's scroll choreography, one
- * continuous shot broken into named scenes (intro / transition / mattress /
- * hero) instead of a flat list of values — so a future scene can be added
- * as its own group here without growing every existing component's props.
+ * The single source of truth for CinematicHero's scroll choreography — one
+ * continuous shot, one physical space, one camera that never stops moving.
+ * Grouped by scene (intro / transition / mattress / hero) so a future scene
+ * can be added as its own group here without growing every existing
+ * component's props.
  *
  *   0%    — a luxury bedroom, static.
  *  20%    — the camera slowly moves toward the bed.
  *  40%    — the bed fills most of the screen.
- *  60%    — the room fades to black; the frame, pillows and duvet vanish.
- *  55-60% — the camera pushes in close on exactly where the bed was —
- *           arriving, not cutting to a new object.
+ *  40-52% — the room's own light fades (brightness + saturation falling on
+ *           the photo itself) while a closing iris narrows attention onto
+ *           the bed — the room going dark, not a shape covering it.
+ *  52-65% — that same narrowing settles almost fully shut: the bed alone,
+ *           dark, isolated — nothing else in the room is visible anymore.
+ *  55-60% — the camera pushes in on exactly that same dark shape — arriving,
+ *           not cutting to a new object.
  *  60-68% — extreme, softly-blurred close-up: material and stitching only.
  *  68-75% — focus pulls and the aperture widens: the object's volume and
  *           silhouette resolve, still slightly soft.
@@ -62,24 +69,22 @@ export type HeroTimeline = {
  *           its ~12deg resting angle.
  * 100%    — floating, centered, in a black premium studio.
  *
- * The mattress reveal is deliberately never an opacity cross-fade of a
- * separate image: it starts anchored exactly where the bed was and arrives
- * via scale, growing outward from that same point — it never repositions
- * before it's recognizable. It uncovers through a shrinking blur + widening
- * aperture centered on the object's own material detail, never through
- * visibility appearing out of nothing. Because the climax scale is large
- * enough to fill most of the viewport, the anchor itself drifts gently
- * toward center as it grows (72%/66% -> 52%/48%) — a camera reframing to
- * keep its subject in frame as it fills more of the shot, not a jump; it
- * still begins at, and reads as having come from, exactly the bed's spot.
- * Rotation is held at 0 through all of this — turning to its resting angle
- * is reserved for after the reveal, its own, later beat: "revealed" and
- * "coming alive" are different moments, and conflating them is what used to
- * read as a picture popping in.
+ * Nothing above is an opacity cross-fade between two scenes. The studio
+ * backdrop (grain, ambient glow, the dark gradients behind everything) is
+ * rendered once, always at full opacity, sitting behind the villa photo in
+ * paint order from the very first frame — it is never "faded up." What
+ * changes is only ever the villa photo itself: its own brightness/
+ * saturation falling (a real light dimming, via CSS filter) and an iris
+ * mask narrowing its visible area (via CSS mask-image, not an opaque shape
+ * drawn on top of it). As that mask closes, the backdrop already sitting
+ * behind it is simply uncovered — depth and occlusion doing the work a
+ * dissolve used to. The mattress reveal (below) picks up in the exact same
+ * register: never an opacity fade of a separate image, always focus/
+ * aperture/scale resolving an object that was already anchored there.
  *
  * Two easing registers do the work of "premium motion": `easeBreath` for
- * anything atmospheric or held (the light closing in, a lift settling into
- * a hold), `easeReveal` for anything arriving at its final, resting state
+ * anything atmospheric or held (the light fading, a lift settling into a
+ * hold), `easeReveal` for anything arriving at its final, resting state
  * (the settle into center, the text unfurling in). Nothing here is linear —
  * a mechanical, constant-rate interpolation is the single fastest way to
  * make a scroll-scrub feel like a slider instead of a shot.
@@ -92,15 +97,33 @@ export function useHeroTimeline(progress: MotionValue<number>): HeroTimeline {
   // punctuated beat after this gets a curve, this one earns its plainness.
   const photoScale = useTransform(progress, [0, 0.4], [1, 1.6]);
 
-  // 40% -> 60%: the room darkens as a closing iris around the bed's screen position
-  const vignetteHole = useTransform(progress, [0.4, 0.6], [80, 3], { ease: easeBreath });
+  // The room's own light fading — a fast initial fall (40-52%), then a
+  // much slower continued settle (52-65%) that overlaps deliberately with
+  // the mattress's own arrival below, so there's never a frame where the
+  // villa's light has "finished" and the mattress hasn't "started": the
+  // handoff has no seam to find. Never fully black — a real dim room still
+  // holds a little light; 0.08 reads as darkness without going flat/dead.
+  const DARK_STOPS = [0.4, 0.52, 0.65];
+  const villaDim = useTransform(progress, DARK_STOPS, [1, 0.15, 0.08], {
+    ease: [easeBreath, easeBreath],
+  });
+  const villaSaturate = useTransform(progress, DARK_STOPS, [1, 0.65, 0.5], {
+    ease: [easeBreath, easeBreath],
+  });
 
-  // The iris's final cleanup — hides the frame/pillows/duvet for good
-  const blackoutOpacity = useTransform(progress, [0.48, 0.6], [0, 1], { ease: easeBreath });
-
-  // The studio settles in a beat after the object starts arriving, not at
-  // the exact same instant — gives the reveal room to be the whole event.
-  const atmosphereOpacity = useTransform(progress, [0.5, 0.66], [0, 1], { ease: easeBreath });
+  // The same closing iris, narrowing around the bed's screen position — in
+  // real px, not gradient-implicit percent. A radial-gradient's bare "%"
+  // stops resolve against the distance to its *farthest corner*, which for
+  // an off-center point like this one is large (over 1300px on a typical
+  // desktop frame) — a "10%" hole would still be a ~130px-radius window,
+  // nowhere near tight enough to read as "just the bed." Pixels give direct
+  // control instead. By 65% it's a small, almost-shut aperture — not zero,
+  // a real iris never closes to a mathematical point — and from here it's
+  // the mattress's own, separate reveal (below) that finishes the job,
+  // painted in front of it.
+  const vignetteHole = useTransform(progress, DARK_STOPS, [1100, 55, 18], {
+    ease: [easeBreath, easeBreath],
+  });
 
   // A few px of quiet drift as the mattress settles into its resting
   // composition — not enough to read as camera movement, just enough that
@@ -194,8 +217,8 @@ export function useHeroTimeline(progress: MotionValue<number>): HeroTimeline {
   const scrollCueOpacity = useTransform(progress, [0.98, 1], [0, 1], { ease: easeReveal });
 
   return {
-    intro: { photoScale, vignetteHole },
-    transition: { blackoutOpacity, atmosphereOpacity, atmosphereDriftY },
+    intro: { photoScale, vignetteHole, villaDim, villaSaturate },
+    transition: { atmosphereDriftY },
     mattress: {
       opacity: mattressOpacity,
       posLeft: mattressLeft,

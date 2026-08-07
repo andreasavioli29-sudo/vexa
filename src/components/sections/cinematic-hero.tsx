@@ -47,28 +47,19 @@ export function CinematicHero() {
         onPointerLeave={pointerTilt.onPointerLeave}
         className="sticky top-0 h-svh w-full overflow-hidden"
       >
-        <IntroScene {...timeline.intro} />
-
-        {/* Final cleanup once the iris has closed — hides the bed frame/bedding for good */}
-        <motion.div
-          aria-hidden="true"
-          style={{ opacity: timeline.transition.blackoutOpacity }}
-          className="pointer-events-none absolute inset-0 bg-black"
-        />
-
         {/*
-          The black studio atmosphere — sits behind the mattress in paint
-          order (this div comes before MattressVisual below), never in front
-          of it. It used to live inside Hero, but Hero paints after the
-          mattress too, so its fully-opaque black layer was silently hiding
-          the mattress the instant it reached full opacity. A few px of
-          scroll-linked drift (y) keeps the backdrop from feeling inert once
-          the choreographed moves are done; it's a quiet, held camera, not a
-          static frame.
+          The studio backdrop — rendered once, always at full opacity, from
+          the very first frame. It is never faded up: it simply sits behind
+          IntroScene in paint order, waiting to be uncovered as that scene's
+          own iris mask narrows and its photo dims. There is no cross-fade
+          here, only occlusion — depth doing what an opacity layer used to.
+          A few px of scroll-linked drift (y) keeps it from feeling inert
+          once the choreographed moves are done; it's a quiet, held camera,
+          not a static frame.
         */}
         <motion.div
           aria-hidden="true"
-          style={{ opacity: timeline.transition.atmosphereOpacity, y: timeline.transition.atmosphereDriftY }}
+          style={{ y: timeline.transition.atmosphereDriftY }}
           className="bg-grain pointer-events-none absolute inset-0 bg-black"
         >
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_18%_-8%,var(--color-anthracite-800),transparent)] opacity-70" />
@@ -87,6 +78,8 @@ export function CinematicHero() {
           <div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_0%,var(--color-black-900)_92%)] opacity-70" />
           <div className="absolute inset-0 shadow-[inset_0_0_180px_60px_rgba(0,0,0,0.55)]" />
         </motion.div>
+
+        <IntroScene {...timeline.intro} />
 
         <MattressVisual
           tiltX={pointerTilt.tiltX}
