@@ -22,6 +22,10 @@ export type HeroTimeline = {
     rotate: MotionValue<number>;
     scale: MotionValue<number>;
     studioOpacity: MotionValue<number>;
+    /** Radius (%) of the reveal aperture — how much of the object is uncovered so far. */
+    revealAperture: MotionValue<number>;
+    /** Focus pull, in px of blur — heavy at arrival, zero once fully resolved. */
+    revealBlur: MotionValue<number>;
   };
   hero: {
     logoOpacity: MotionValue<number>;
@@ -43,14 +47,35 @@ export type HeroTimeline = {
  * hero) instead of a flat list of values — so a future scene can be added
  * as its own group here without growing every existing component's props.
  *
- *   0%  — a luxury bedroom, static.
- *  20%  — the camera slowly moves toward the bed.
- *  40%  — the bed fills most of the screen.
- *  60%  — the room fades to black; the frame, pillows and duvet vanish;
- *         only the mattress remains, exactly where the bed was.
- *  75%  — the mattress gently lifts.
- *  85%  — it rotates to its ~12deg resting angle.
- * 100%  — floating, centered, in a black premium studio.
+ *   0%    — a luxury bedroom, static.
+ *  20%    — the camera slowly moves toward the bed.
+ *  40%    — the bed fills most of the screen.
+ *  60%    — the room fades to black; the frame, pillows and duvet vanish.
+ *  55-60% — the camera pushes in close on exactly where the bed was —
+ *           arriving, not cutting to a new object.
+ *  60-68% — extreme, softly-blurred close-up: material and stitching only.
+ *  68-75% — focus pulls and the aperture widens: the object's volume and
+ *           silhouette resolve, still slightly soft.
+ *  75-80% — fully sharp, fully uncovered, at roughly 75% of the viewport —
+ *           the climax.
+ *  80-90% — it settles back to its composed size, lifts, and rotates to
+ *           its ~12deg resting angle.
+ * 100%    — floating, centered, in a black premium studio.
+ *
+ * The mattress reveal is deliberately never an opacity cross-fade of a
+ * separate image: it starts anchored exactly where the bed was and arrives
+ * via scale, growing outward from that same point — it never repositions
+ * before it's recognizable. It uncovers through a shrinking blur + widening
+ * aperture centered on the object's own material detail, never through
+ * visibility appearing out of nothing. Because the climax scale is large
+ * enough to fill most of the viewport, the anchor itself drifts gently
+ * toward center as it grows (72%/66% -> 52%/48%) — a camera reframing to
+ * keep its subject in frame as it fills more of the shot, not a jump; it
+ * still begins at, and reads as having come from, exactly the bed's spot.
+ * Rotation is held at 0 through all of this — turning to its resting angle
+ * is reserved for after the reveal, its own, later beat: "revealed" and
+ * "coming alive" are different moments, and conflating them is what used to
+ * read as a picture popping in.
  *
  * Two easing registers do the work of "premium motion": `easeBreath` for
  * anything atmospheric or held (the light closing in, a lift settling into
@@ -73,70 +98,100 @@ export function useHeroTimeline(progress: MotionValue<number>): HeroTimeline {
   // The iris's final cleanup — hides the frame/pillows/duvet for good
   const blackoutOpacity = useTransform(progress, [0.48, 0.6], [0, 1], { ease: easeBreath });
 
-  // Given a touch more room than the mattress's own fade (ends 0.66, not
-  // 0.62) so the studio doesn't finish saturating at the exact same instant
-  // as the product — the atmosphere settles in a beat after the object does.
+  // The studio settles in a beat after the object starts arriving, not at
+  // the exact same instant — gives the reveal room to be the whole event.
   const atmosphereOpacity = useTransform(progress, [0.5, 0.66], [0, 1], { ease: easeBreath });
 
-  // A few px of quiet drift as the mattress lifts and settles — not enough
-  // to read as camera movement, just enough that the backdrop isn't inert.
-  const atmosphereDriftY = useTransform(progress, [0.75, 1], [-6, 0], { ease: easeBreath });
+  // A few px of quiet drift as the mattress settles into its resting
+  // composition — not enough to read as camera movement, just enough that
+  // the backdrop isn't inert.
+  const atmosphereDriftY = useTransform(progress, [0.8, 1], [-6, 0], { ease: easeBreath });
 
-  // The mattress fades in exactly as the bed's bedding disappears into the
-  // blackout — same screen position (72%, 66%, the IntroScene vignette's own
-  // anchor), same small apparent size, no rotation: it reads as "the bed
-  // became this" rather than a new object arriving.
-  const mattressOpacity = useTransform(progress, [0.52, 0.62], [0, 1], { ease: easeReveal });
+  // The object is visible (opacity) almost the instant the reveal begins —
+  // what actually reveals it from here is arrival (scale), focus (blur),
+  // and aperture, never opacity. Opacity's only job is avoiding a hard pop
+  // the moment this element mounts into view.
+  const mattressOpacity = useTransform(progress, [0.54, 0.57], [0, 1], { ease: easeReveal });
 
-  // 60% -> 75%: it holds still, resting in place — "only the mattress remains"
-  // 75% -> 100%: it lifts (a small upward shift), then drifts to centered —
-  // low enough in the frame that the headline and buttons above always sit
-  // clear of it (those buttons are transparent-fill by design, so anything
-  // behind them shows through). The lift itself is a held, gentle breath;
-  // only the final glide into center gets the confident settle curve.
-  const mattressLeft = useTransform(progress, [0.6, 0.85, 1], ["72%", "72%", "50%"], {
-    ease: easeReveal,
+  // The reveal, in four beats — starting from the bed's own screen position
+  // (72%, 66%; see the position drift below for why it doesn't stay there):
+  //
+  //   Arrival (55-60%): scale rushes from bed-size toward its largest —
+  //     the camera closing the remaining distance. Still tight, still blurred.
+  //   Details (60-68%): a soft, shallow-focus close-up on the stitching and
+  //     the copper edge trim — the aperture opens a little, focus barely.
+  //   Volume (68-75%): the aperture opens across most of the frame and
+  //     focus pulls further — the whole silhouette reads now, still soft.
+  //   Whole product (75-80%): fully open, fully sharp, held at its largest —
+  //     this is the climax the rest of the shot has been building to.
+  const REVEAL_STOPS = [0.55, 0.6, 0.68, 0.75, 0.8];
+
+  const revealAperture = useTransform(progress, REVEAL_STOPS, [12, 15, 42, 96, 160], {
+    ease: [easeReveal, easeBreath, easeBreath, easeBreath],
   });
-  const mattressTop = useTransform(progress, [0.6, 0.75, 1], ["66%", "59%", "80%"], {
+  const revealBlur = useTransform(progress, REVEAL_STOPS, [22, 20, 8, 2, 0], {
+    ease: [easeReveal, easeBreath, easeBreath, easeBreath],
+  });
+
+  // The anchor drifts gently toward center throughout the reveal — a
+  // reframe, not a repositioning — so the object never clips the viewport
+  // edge as it grows to climax size, then continues to its final, lower,
+  // composed position once recomposing begins at 80%.
+  const mattressLeft = useTransform(progress, [0.55, 0.8, 0.9], ["72%", "52%", "50%"], {
+    ease: [easeBreath, easeReveal],
+  });
+  const mattressTop = useTransform(progress, [0.55, 0.8, 0.9], ["66%", "48%", "80%"], {
     ease: [easeBreath, easeReveal],
   });
 
-  // 60% -> 85%: stays bed-sized while it lifts and turns; 85% -> 100%: grows
-  // to its full presentation size as it settles centered
-  const mattressScale = useTransform(progress, [0.6, 0.85, 1], [0.4, 0.4, 1], {
-    ease: easeReveal,
-  });
+  // One continuous curve for the whole arc: bed-anchored size (0.4, matching
+  // the dollied-in photo's own bed) rushes past its final presentation size
+  // to ~2.3x the box's base width — roughly 70-80% of the viewport on
+  // common desktop sizes, verified against the box's own min()-of-three
+  // sizing formula, not assumed — holds near that peak through the rest of
+  // the reveal, then settles back down once recomposing begins.
+  const mattressScale = useTransform(
+    progress,
+    [...REVEAL_STOPS, 0.9],
+    [0.4, 1.6, 2.0, 2.2, 2.3, 1],
+    { ease: [easeReveal, easeBreath, easeBreath, easeBreath, easeReveal] },
+  );
 
-  // 75% -> 85%: rotates to its ~12deg resting angle, then holds — a settle, not a spin
-  const mattressRotate = useTransform(progress, [0.75, 0.85], [0, 12], { ease: easeReveal });
+  // 80% -> 90%: only now does the object rotate — turning to its resting
+  // angle. "Revealed" and "coming alive" are different beats; rotation is
+  // held at 0 through the entire reveal above so the object reads as
+  // resolving into focus, not tumbling into view.
+  const mattressRotate = useTransform(progress, [0.8, 0.9], [0, 12], { ease: easeReveal });
 
-  // Studio dressing (ambient glow, contact shadow, fog) only once it's
-  // actually airborne — not while it's still sitting where the bed was
-  const studioOpacity = useTransform(progress, [0.75, 0.95], [0, 1], { ease: easeBreath });
+  // Studio dressing (ambient glow, contact shadow, fog) arrives right as the
+  // reveal reaches full focus — the light turning on for the climax — and
+  // holds through the settle into center.
+  const studioOpacity = useTransform(progress, [0.75, 0.87], [0, 1], { ease: easeBreath });
 
-  // The final arrival plays as one unhurried beat, not a scramble in the
-  // last 10% of scroll: logo first and alone, then kicker, headline, and
-  // CTAs unfurl in a light stagger — each overlapping the last rather than
-  // waiting for it, so it reads as one continuous motion, not four cues.
+  // The final arrival plays as one unhurried beat, not a scramble: logo
+  // first and alone, then kicker, headline, and CTAs unfurl in a light
+  // stagger — each overlapping the last rather than waiting for it, so it
+  // reads as one continuous motion, not four cues. Compressed into the last
+  // 10% of scroll (rather than the last 18%, pre-reveal-redesign) on
+  // purpose — after the climax above, a quick, confident title card is the
+  // right denouement, not a second competing set-piece.
   // Only the opacity leg of each reveal carries a custom curve — at a 10-14px
   // drift, an eased Y offset and a linear one are visually indistinguishable,
-  // and opacity alone already carries the "arriving" feel. Skipping the
-  // redundant easing on Y measurably cuts per-frame cost during scroll
-  // without giving up anything a viewer would perceive.
-  const logoOpacity = useTransform(progress, [0.82, 0.9], [0, 1], { ease: easeReveal });
-  const logoY = useTransform(progress, [0.82, 0.9], [14, 0]);
+  // and opacity alone already carries the "arriving" feel.
+  const logoOpacity = useTransform(progress, [0.9, 0.94], [0, 1], { ease: easeReveal });
+  const logoY = useTransform(progress, [0.9, 0.94], [14, 0]);
 
-  const kickerOpacity = useTransform(progress, [0.9, 0.95], [0, 1], { ease: easeReveal });
-  const kickerY = useTransform(progress, [0.9, 0.95], [12, 0]);
+  const kickerOpacity = useTransform(progress, [0.94, 0.96], [0, 1], { ease: easeReveal });
+  const kickerY = useTransform(progress, [0.94, 0.96], [12, 0]);
 
-  const headlineOpacity = useTransform(progress, [0.925, 0.975], [0, 1], { ease: easeReveal });
-  const headlineY = useTransform(progress, [0.925, 0.975], [12, 0]);
+  const headlineOpacity = useTransform(progress, [0.955, 0.975], [0, 1], { ease: easeReveal });
+  const headlineY = useTransform(progress, [0.955, 0.975], [12, 0]);
 
-  const ctaOpacity = useTransform(progress, [0.95, 1], [0, 1], { ease: easeReveal });
-  const ctaY = useTransform(progress, [0.95, 1], [10, 0]);
+  const ctaOpacity = useTransform(progress, [0.97, 1], [0, 1], { ease: easeReveal });
+  const ctaY = useTransform(progress, [0.97, 1], [10, 0]);
   const ctaPointerEvents = useTransform(ctaOpacity, (v): string => (v > 0.6 ? "auto" : "none"));
 
-  const scrollCueOpacity = useTransform(progress, [0.96, 1], [0, 1], { ease: easeReveal });
+  const scrollCueOpacity = useTransform(progress, [0.98, 1], [0, 1], { ease: easeReveal });
 
   return {
     intro: { photoScale, vignetteHole },
@@ -148,6 +203,8 @@ export function useHeroTimeline(progress: MotionValue<number>): HeroTimeline {
       rotate: mattressRotate,
       scale: mattressScale,
       studioOpacity,
+      revealAperture,
+      revealBlur,
     },
     hero: {
       logoOpacity,

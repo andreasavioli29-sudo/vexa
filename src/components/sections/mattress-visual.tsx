@@ -1,7 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { motion, useMotionTemplate, useReducedMotion, type MotionValue } from "framer-motion";
+import {
+  motion,
+  useMotionTemplate,
+  useReducedMotion,
+  useTransform,
+  type MotionValue,
+} from "framer-motion";
 
 import { useMarkHeroAssetLoaded } from "@/components/providers/hero-assets-provider";
 import { HERO_MATTRESS_IMAGE } from "@/lib/hero-assets";
@@ -23,6 +29,10 @@ type MattressVisualProps = {
   scale: MotionValue<number>;
   /** Ambient studio dressing (glow, contact shadow, fog) — only once it's actually floating. */
   studioOpacity: MotionValue<number>;
+  /** Radius (%) of the reveal aperture centered on the object's own material detail. */
+  revealAperture: MotionValue<number>;
+  /** Focus pull, in px of blur, driving the reveal from soft close-up to fully sharp. */
+  revealBlur: MotionValue<number>;
 };
 
 /**
@@ -44,10 +54,18 @@ export function MattressVisual({
   rotate,
   scale,
   studioOpacity,
+  revealAperture,
+  revealBlur,
 }: MattressVisualProps) {
   const markLoaded = useMarkHeroAssetLoaded();
   const reduceMotion = useReducedMotion();
   const sheen = useMotionTemplate`radial-gradient(620px circle at ${lightX}% ${lightY}%, rgba(255,255,255,0.1), transparent 60%)`;
+  // Centered on the object's own material detail (the stitching + copper
+  // edge trim sit dead-center of this photo) — the aperture that opens
+  // during the reveal, not a rectangle appearing.
+  const revealApertureOuter = useTransform(revealAperture, (r) => r + 18);
+  const revealMask = useMotionTemplate`radial-gradient(circle at 50% 50%, white 0%, white ${revealAperture}%, transparent ${revealApertureOuter}%)`;
+  const revealFilter = useMotionTemplate`blur(${revealBlur}px)`;
 
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-0">
@@ -122,36 +140,51 @@ export function MattressVisual({
             style={{ transformStyle: "preserve-3d", rotateX: tiltX, rotateY: tiltY }}
           >
             {/*
-              The source photo is a full studio shot (its own walls/floor),
-              not an isolated cutout. Rather than edit the image itself, this
-              mask feathers just its top edge so that background blends into
-              whatever sits behind it — the villa photo early on, the black
-              studio atmosphere later — without showing a hard rectangle.
+              The reveal itself: a soft-edged aperture centered on the
+              object's own material detail (the stitching + copper trim,
+              not empty background — verified against the source photo)
+              widens from a tight close-up to the full frame, in step with
+              a focus pull from heavy blur to fully sharp. This is what
+              uncovers the mattress — never opacity, never a rectangle
+              appearing — so it reads as the camera resolving an object
+              that was already there, not an image swapping in.
             */}
-            <div
-              className="relative h-full w-full"
-              style={{
-                maskImage: "linear-gradient(to bottom, transparent 0%, black 14%)",
-                WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 14%)",
-              }}
-            >
-              <Image
-                src={HERO_MATTRESS_IMAGE}
-                alt="VEXA ONE — the official product"
-                fill
-                priority
-                sizes="(min-width: 1024px) 55vw, 90vw"
-                className="select-none object-contain"
-                draggable={false}
-                onLoad={() => markLoaded(HERO_MATTRESS_IMAGE)}
-                onError={() => markLoaded(HERO_MATTRESS_IMAGE)}
-              />
-            </div>
-            {/* subtle mouse-reactive sheen over the photo */}
             <motion.div
-              className="absolute inset-0"
-              style={{ backgroundImage: sheen, mixBlendMode: "overlay" }}
-            />
+              className="relative h-full w-full"
+              style={{ maskImage: revealMask, WebkitMaskImage: revealMask, filter: revealFilter }}
+            >
+              {/*
+                The source photo is a full studio shot (its own walls/floor),
+                not an isolated cutout. Rather than edit the image itself, this
+                mask feathers just its top edge so that background blends into
+                whatever sits behind it — the villa photo early on, the black
+                studio atmosphere later — without showing a hard rectangle.
+              */}
+              <div
+                className="relative h-full w-full"
+                style={{
+                  maskImage: "linear-gradient(to bottom, transparent 0%, black 14%)",
+                  WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 14%)",
+                }}
+              >
+                <Image
+                  src={HERO_MATTRESS_IMAGE}
+                  alt="VEXA ONE — the official product"
+                  fill
+                  priority
+                  sizes="(min-width: 1024px) 55vw, 90vw"
+                  className="select-none object-contain"
+                  draggable={false}
+                  onLoad={() => markLoaded(HERO_MATTRESS_IMAGE)}
+                  onError={() => markLoaded(HERO_MATTRESS_IMAGE)}
+                />
+              </div>
+              {/* subtle mouse-reactive sheen over the photo */}
+              <motion.div
+                className="absolute inset-0"
+                style={{ backgroundImage: sheen, mixBlendMode: "overlay" }}
+              />
+            </motion.div>
           </motion.div>
         </motion.div>
 
