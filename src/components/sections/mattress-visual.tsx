@@ -29,41 +29,43 @@ type MattressVisualProps = {
   scale: MotionValue<number>;
   /** Ambient studio dressing (glow, contact shadow, fog) — only once it's actually floating. */
   studioOpacity: MotionValue<number>;
-  /** Radius (%) of the reveal aperture centered on the object's own material detail. */
+  /** Radius, in px, of the discovery window — a small, moving flashlight during the fragment sequence, thrown wide open for the full reveal. */
   revealAperture: MotionValue<number>;
-  /** Focus pull, in px of blur, driving the reveal from soft close-up to fully sharp. */
+  /** Focus pull, in px of blur — soft for the earliest, most abstract fragments, sharpening as each gets more legible. */
   revealBlur: MotionValue<number>;
-  /** Position (%) of a directional light discovering the object, edge to silhouette. */
-  lightSweep: MotionValue<number>;
-  /** transform-origin X (%) — where the post-reveal camera pushes expand from, reframing which part of the object they read as "moving toward." */
+  /** transform-origin X (%) — which point on the object's own surface is currently being investigated; also the discovery window's own center. */
   detailOriginX: MotionValue<number>;
   /** transform-origin Y (%), paired with detailOriginX. */
   detailOriginY: MotionValue<number>;
 };
 
 /**
- * The official VEXA ONE product photograph — animated, not redrawn. It is
- * anchored at the exact screen position of the bed in Scene 01 (same
- * left/top the IntroScene vignette closes around), fades in the instant the
- * frame/pillows/duvet disappear into the blackout, then lifts, rotates, and
- * drifts to centered as one continuous scroll-driven move — never a second,
- * separate "product hero" cut.
+ * The official VEXA ONE product photograph — animated, not redrawn. It
+ * never simply fades or focuses into view as a single object: a small
+ * discovery window, no bigger than a fragment, moves from point to point
+ * across the object's own surface — shape, then edge, then stitching,
+ * then material, then proportions — each held for a real beat, each more
+ * magnified and more abstract the earlier it comes, before the window
+ * finally blows open onto the whole, composed product. `detailOriginX`/
+ * `detailOriginY` are doing two jobs at once, deliberately: they're both
+ * the discovery window's own center (`revealMask` below) and the point
+ * `scale` expands from (this element's own `transformOrigin`) — the same
+ * fixed point on the object, magnified, is what the camera is looking at
+ * and what the window is centered on. That's what makes a fragment read
+ * as "this specific detail, isolated" rather than "the same crop, resized."
  *
- * Focus and aperture (below) govern *when* the object becomes visible;
- * light governs *how* it reads once it is. A directional beam travels
- * across the material in the same beats as the reveal — never illuminating
- * the whole surface at once — while a fixed, low-angle key light stays
- * underneath it throughout, so the quilting and edge trim keep reading as
- * volume rather than a flat photograph, exactly the way a real studio
- * light would sculpt it.
+ * A fixed, low-angle key light stays under all of it throughout, so
+ * whatever's inside the window — trim, stitching, fabric — reads as real
+ * material and volume rather than a flat photograph, exactly the way a
+ * single softbox would sculpt it on a real set.
  *
- * The reveal isn't the end of this component's story either. Once at rest,
- * `scale` keeps going — pushing in past presentation size onto a specific
- * point, holding, reframing to another, holding again, then pulling back
- * out — with `detailOriginX`/`detailOriginY` deciding which part of the
- * object each push expands from. `posLeft`/`posTop`/`rotate` never move
- * again once the reveal settles: every later beat is the camera choosing
- * where to look, not the object performing for the camera.
+ * The reveal isn't the end of this component's story either. Once settled
+ * at rest, `scale` keeps going — pushing in once more toward the object's
+ * nameplate, holding, then pulling back to the full product — with the
+ * same `detailOriginX`/`detailOriginY` mechanism doing the reframing.
+ * `posLeft`/`posTop`/`rotate` never move again once the reveal settles:
+ * every later beat is the camera choosing where to look, not the object
+ * performing for the camera.
  */
 export function MattressVisual({
   tiltX,
@@ -78,7 +80,6 @@ export function MattressVisual({
   studioOpacity,
   revealAperture,
   revealBlur,
-  lightSweep,
   detailOriginX,
   detailOriginY,
 }: MattressVisualProps) {
@@ -86,17 +87,13 @@ export function MattressVisual({
   const reduceMotion = useReducedMotion();
   const sheen = useMotionTemplate`radial-gradient(620px circle at ${lightX}% ${lightY}%, rgba(255,255,255,0.1), transparent 60%)`;
   const detailOrigin = useMotionTemplate`${detailOriginX}% ${detailOriginY}%`;
-  // Centered on the object's own material detail (the stitching + copper
-  // edge trim sit dead-center of this photo) — the aperture that opens
-  // during the reveal, not a rectangle appearing.
-  const revealApertureOuter = useTransform(revealAperture, (r) => r + 18);
-  const revealMask = useMotionTemplate`radial-gradient(circle at 50% 50%, white 0%, white ${revealAperture}%, transparent ${revealApertureOuter}%)`;
+  // A proportional (not fixed) falloff, same technique as the villa iris —
+  // real px throughout, since bare "%" stops on an off-center circle
+  // resolve against the *farthest corner*, not the window's own intended
+  // size, and every fragment here is deliberately off-center.
+  const revealApertureOuter = useTransform(revealAperture, (r) => r * 1.6);
+  const revealMask = useMotionTemplate`radial-gradient(circle at ${detailOriginX}% ${detailOriginY}%, white 0px, white ${revealAperture}px, transparent ${revealApertureOuter}px)`;
   const revealFilter = useMotionTemplate`blur(${revealBlur}px)`;
-  // A soft band of light traveling along the object's own diagonal (the
-  // photo's near edge runs lower-left to upper-right) — discovering edge,
-  // then stitching, then top fabric, then clearing the frame by the
-  // climax, rather than a wash appearing over the whole surface at once.
-  const sweepPosition = useMotionTemplate`${lightSweep}% 50%`;
 
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-0">
@@ -172,14 +169,13 @@ export function MattressVisual({
             style={{ transformStyle: "preserve-3d", rotateX: tiltX, rotateY: tiltY }}
           >
             {/*
-              The reveal itself: a soft-edged aperture centered on the
-              object's own material detail (the stitching + copper trim,
-              not empty background — verified against the source photo)
-              widens from a tight close-up to the full frame, in step with
-              a focus pull from heavy blur to fully sharp. This is what
-              uncovers the mattress — never opacity, never a rectangle
-              appearing — so it reads as the camera resolving an object
-              that was already there, not an image swapping in.
+              The discovery window itself: small, soft-edged, centered on
+              whichever fragment is currently in play, paired with a focus
+              pull that's soft for the most abstract fragments and sharp
+              once material is meant to be legible. This is what uncovers
+              the mattress — never opacity, never a rectangle appearing —
+              so each fragment reads as the camera finding a specific,
+              already-there detail, not an image swapping in.
             */}
             <motion.div
               className="relative h-full w-full"
@@ -223,22 +219,6 @@ export function MattressVisual({
                 style={{
                   backgroundImage:
                     "linear-gradient(125deg, rgba(255,255,255,0.16) 0%, transparent 45%, rgba(0,0,0,0.22) 100%)",
-                  mixBlendMode: "soft-light",
-                }}
-              />
-              {/*
-                The directional discovery light: travels once across the
-                material as the reveal plays out, then clears the frame by
-                the climax — it is what exposes the object part by part, not
-                a rectangle appearing or a wash over the whole surface.
-              */}
-              <motion.div
-                className="absolute inset-0"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(115deg, transparent 32%, rgba(255,241,224,0.55) 48%, transparent 64%)",
-                  backgroundSize: "260% 260%",
-                  backgroundPosition: sweepPosition,
                   mixBlendMode: "soft-light",
                 }}
               />

@@ -21,11 +21,14 @@ import { EASE_BREATH } from "@/lib/motion";
  * appears, and only then animates to centered. Everything is driven by one
  * scroll progress value across a single pinned viewport.
  *
- * The wrapper's height is longer than the reveal alone needs — the reveal
- * settling into rest is the middle of this shot, not the end of it. The
- * added length is the product's own story: the camera continuing to push
- * in, hold, and reframe across the object after it arrives, all driven by
- * the same single progress value (see useHeroTimeline).
+ * The wrapper's height gives the product reveal itself real room: it is
+ * not a single fade or focus pull, but a sequence of small, held fragments
+ * — shape, edge, stitching, material, proportions — each its own
+ * deliberate beat before the whole object finally resolves (see
+ * useHeroTimeline for the full sequence). That reveal settling into rest
+ * is still the middle of this shot, not the end of it — the camera goes on
+ * to push in once more, hold, and pull back before the title card, all
+ * driven by the same single progress value.
  */
 export function CinematicHero() {
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -47,7 +50,7 @@ export function CinematicHero() {
   const pointerTilt = usePointerTilt();
 
   return (
-    <div ref={wrapperRef} className="relative h-[380vh] w-full sm:h-[420vh]">
+    <div ref={wrapperRef} className="relative h-[600vh] w-full sm:h-[640vh]">
       <div
         onPointerMove={pointerTilt.onPointerMove}
         onPointerLeave={pointerTilt.onPointerLeave}

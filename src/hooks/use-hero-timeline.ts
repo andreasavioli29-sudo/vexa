@@ -28,13 +28,11 @@ export type HeroTimeline = {
     rotate: MotionValue<number>;
     scale: MotionValue<number>;
     studioOpacity: MotionValue<number>;
-    /** Radius (%) of the reveal aperture — how much of the object is uncovered so far. */
+    /** Radius, in px, of the small window the object is currently being discovered through — a moving flashlight, not an opening iris. */
     revealAperture: MotionValue<number>;
-    /** Focus pull, in px of blur — heavy at arrival, zero once fully resolved, with one small later pulse as the camera re-focuses on a second detail. */
+    /** Focus pull, in px of blur — soft and mysterious for the earliest, most abstract fragments, tack-sharp by the full reveal. */
     revealBlur: MotionValue<number>;
-    /** Position (%) of a directional light discovering the object — edge, then stitching, then top fabric, then the whole silhouette. */
-    lightSweep: MotionValue<number>;
-    /** transform-origin X (%) for the post-reveal detail push-ins — where on the object's own surface the camera is currently framed on. */
+    /** transform-origin X (%) — which point on the object's own surface the camera is currently investigating. */
     detailOriginX: MotionValue<number>;
     /** transform-origin Y (%), paired with detailOriginX. */
     detailOriginY: MotionValue<number>;
@@ -60,50 +58,58 @@ export type HeroTimeline = {
  * can be added as its own group here without growing every existing
  * component's props.
  *
- *    0%     — a luxury bedroom, static.
- *   12%     — the camera slowly moves toward the bed.
- *   23%     — the bed fills most of the screen.
- *  23-30%   — the room's own light fades while a closing iris narrows
- *             attention onto the bed — the room going dark, not a shape
- *             covering it.
- *  30-38%   — that narrowing settles almost fully shut: the bed alone,
- *             dark, isolated.
- *  32-35%   — the camera pushes in on exactly that same dark shape —
- *             arriving, not cutting to a new object.
- *  35-39%   — extreme, softly-blurred close-up: material and stitching only.
- *  39-46%   — focus pulls and the aperture widens: the object's volume and
- *             silhouette resolve, still slightly soft.
- *  46-52%   — fully sharp, fully uncovered, at roughly 75% of the viewport
- *             — the climax the sequence has built toward so far.
- *  46-52%   — it settles back to its composed size, lifts, and rotates to
- *             its ~12deg resting angle: floating, centered, in the studio.
+ * THE PRODUCT IS NEVER SHOWN. IT IS DISCOVERED.
  *
- * That settle used to be the ending. It no longer is — the reveal is the
- * beginning of the product's story, not its conclusion:
+ * The mattress reveal is not an object fading, focusing, or growing into
+ * view as a single continuous action — that reads as a website animation,
+ * not a film. Instead it is a sequence of small, dark, deliberately
+ * incomplete fragments, each a fixed point of interest the camera lingers
+ * on before moving to the next, in an order that answers less first and
+ * more later:
  *
- *  52-56.5%  — held. The visitor's first real look at the finished product,
- *              at rest, before anything else happens.
- *  56.5-62%  — the camera pushes in again, past presentation size, onto the
- *              same central point the reveal itself already established
- *              (the stitching and copper trim) — a second, closer look.
- *  62-68%    — held on that detail.
- *  68-73.5%  — the frame re-centers toward the object's opposite long edge
- *              (where its nameplate sits), with one small, deliberate focus
- *              pull mid-move — a rack focus, not a jump cut.
- *  73.5-79%  — held on that second detail.
- *  79-83.5%  — the camera pulls back out to the full, composed product.
- *  83.5-86%  — held there, one last time, before the title card arrives.
- *  86-100%   — floating, centered, in a black premium studio, as the
- *              wordmark, kicker, headline, and CTAs unfurl.
+ *   shape       — a sliver of edge-lit contour against black. Could be
+ *                 almost anything. Scale is at its most extreme here —
+ *                 the fragment is magnified, isolated, unidentifiable.
+ *   edge        — closer on where the trim meets the side. A glint, a
+ *                 line of light. Slightly less magnified, slightly less
+ *                 abstract.
+ *   stitching   — the channel-quilting, now legible as fabric.
+ *   material    — pulled back further onto the quilted plane itself.
+ *                 Sharp, tactile — this is the "I want to touch this"
+ *                 beat — but still no sense of the object's overall shape.
+ *   proportions — the widest, least magnified fragment, aperture opened
+ *                 the most so far. Two edges converge into view; for the
+ *                 first time the mind can guess at scale and geometry —
+ *                 but the guess is still unconfirmed.
+ *   the whole   — a decisive, singular snap: the small discovery window
+ *                 blows open and the camera pushes to its largest,
+ *                 sharpest, fully composed frame in one motion. This is
+ *                 the payoff every fragment before it was withholding.
  *
- * Nothing in that second half rotates the object or turns it into a
- * product-viewer toy — `mattressRotate` and `posLeft`/`posTop` are both
- * fully resolved by 52% and never move again. Every later beat is the
- * camera's own move (`scale` continuing its one existing curve, plus a new
- * `detailOriginX`/`detailOriginY` reframing where that scale expands from)
- * and the camera's own focus (`revealBlur`'s one small later pulse) — the
- * object itself just sits there, more desirable each time the camera
- * lingers on it, never spinning to prove it.
+ * Two motion values do almost all of the work, moving in opposition to
+ * each other: `mattressScale` (how magnified the current fragment is —
+ * high for the most abstract fragments, easing down as they get more
+ * legible, then surging back up for the final push) and `revealAperture`
+ * (how large the discovery window is — small and barely-there for the
+ * early fragments, widening fragment by fragment, then jumping open
+ * entirely for the reveal). `detailOriginX`/`detailOriginY` decide *where*
+ * on the object each fragment sits — the same coordinate drives both the
+ * discovery window's own center and the point `scale` expands from, so a
+ * fragment always reads as "this specific, fixed part of the object,
+ * magnified" rather than "the same crop, resized." Every fragment holds
+ * for a real, deliberate beat before the camera moves to the next — the
+ * pauses are not empty space, they're where desire is built.
+ *
+ * The object never rotates and never repositions itself on screen through
+ * any of this (`rotate`, `posLeft`, `posTop` are all untouched until the
+ * settle afterward) — it is the camera's attention moving across a still,
+ * confident object, never the object performing for the camera.
+ *
+ * After the reveal settles into its composed, floating rest position, the
+ * same fragment-discovery language gets one more, much shorter use: a held
+ * beat, a single push toward the object's nameplate, a hold, and a pull
+ * back to the full product — a quiet coda, not a second set-piece — before
+ * the title card arrives.
  *
  * Nothing above is an opacity cross-fade between two scenes. The studio
  * backdrop (grain, ambient glow, the dark gradients behind everything) is
@@ -114,43 +120,40 @@ export type HeroTimeline = {
  * mask narrowing its visible area (via CSS mask-image, not an opaque shape
  * drawn on top of it). As that mask closes, the backdrop already sitting
  * behind it is simply uncovered — depth and occlusion doing the work a
- * dissolve used to. The mattress reveal (below) picks up in the exact same
- * register: never an opacity fade of a separate image, always focus/
- * aperture/scale resolving an object that was already anchored there.
+ * dissolve used to. The mattress fragments above pick up in the exact same
+ * register: never an opacity fade of a separate image, always a window
+ * (in real px, for the same farthest-corner reason documented on
+ * `vignetteHole` below) moving across an object that was already there.
  *
  * Two easing registers do the work of "premium motion": `easeBreath` for
- * anything atmospheric or held (the light fading, a lift settling into a
- * hold), `easeReveal` for anything arriving at its final, resting state
- * (the settle into center, the text unfurling in, a camera move landing on
- * its subject). Nothing here is linear — a mechanical, constant-rate
+ * anything atmospheric, held, or resting (a fragment's hold, the light
+ * fading, a lift settling), `easeReveal` for anything arriving at a new
+ * fixed point (a fragment's own arrival, the settle into center, the text
+ * unfurling in). Nothing here is linear — a mechanical, constant-rate
  * interpolation is the single fastest way to make a scroll-scrub feel like
  * a slider instead of a shot.
  *
- * Light, not just visibility, does the directing. The villa's own vignette
- * and contrast (below) build hierarchy well before the room actually goes
- * dark, so the eye is already settling on the bed rather than the room
- * lighting flatly, uniformly, until it suddenly isn't. The mattress reveal
- * carries the same idea further: a directional light travels across the
- * object once it arrives (`lightSweep`), discovering edge, then stitching,
- * then the top fabric, then the whole silhouette — never switching the
- * object on all at once.
+ * Light still builds hierarchy the way the villa scene establishes it:
+ * the villa's own vignette and contrast build well before the room
+ * actually goes dark, so the eye is already settling on the bed rather
+ * than the room lighting flatly, uniformly, until it suddenly isn't.
  */
 export function useHeroTimeline(progress: MotionValue<number>): HeroTimeline {
-  // 0% -> 23%: the camera dollies in continuously until the bed fills the
+  // 0% -> ~14%: the camera dollies in continuously until the bed fills the
   // screen. Deliberately left linear — this is the one sustained,
   // motorized-feeling push of the whole sequence, and a constant rate reads
   // as more deliberate/inevitable here than an eased one would; every
   // shorter, punctuated beat after this gets a curve, this one earns its
   // plainness.
-  const photoScale = useTransform(progress, [0, 0.232], [1, 1.6]);
+  const photoScale = useTransform(progress, [0, 0.1417], [1, 1.6]);
 
   // The room's own light fading — a fast initial fall, then a much slower
-  // continued settle that overlaps deliberately with the mattress's own
-  // arrival below, so there's never a frame where the villa's light has
-  // "finished" and the mattress hasn't "started": the handoff has no seam
-  // to find. Never fully black — a real dim room still holds a little
-  // light; 0.08 reads as darkness without going flat/dead.
-  const DARK_STOPS = [0.232, 0.301, 0.376];
+  // continued settle that overlaps deliberately with the first fragment
+  // below, so there's never a frame where the villa's light has "finished"
+  // and the discovery hasn't "started": the handoff has no seam to find.
+  // Never fully black — a real dim room still holds a little light; 0.08
+  // reads as darkness without going flat/dead.
+  const DARK_STOPS = [0.1417, 0.1967, 0.2333];
   const villaDim = useTransform(progress, DARK_STOPS, [1, 0.15, 0.08], {
     ease: [easeBreath, easeBreath],
   });
@@ -179,153 +182,130 @@ export function useHeroTimeline(progress: MotionValue<number>): HeroTimeline {
   // an off-center point like this one is large (over 1300px on a typical
   // desktop frame) — a "10%" hole would still be a ~130px-radius window,
   // nowhere near tight enough to read as "just the bed." Pixels give direct
-  // control instead. By the last stop it's a small, almost-shut aperture —
-  // not zero, a real iris never closes to a mathematical point — and from
-  // here it's the mattress's own, separate reveal (below) that finishes the
-  // job, painted in front of it.
+  // control instead, and the same reasoning is why every fragment window
+  // below is also defined in px. By the last stop it's a small, almost-shut
+  // aperture — not zero, a real iris never closes to a mathematical point.
   const vignetteHole = useTransform(progress, DARK_STOPS, [1100, 55, 18], {
     ease: [easeBreath, easeBreath],
   });
 
-  // A few px of quiet drift as the mattress settles into its resting
-  // composition — not enough to read as camera movement, just enough that
-  // the backdrop isn't inert. Resolved before the product-story beats below
-  // begin: once the camera starts exploring the object itself, the backdrop
-  // holds still so nothing competes with it.
-  const atmosphereDriftY = useTransform(progress, [0.463, 0.521], [-6, 0], { ease: easeBreath });
+  // The object is visible (opacity) the instant the room goes dark and the
+  // first fragment begins — what actually reveals anything from here is
+  // never opacity again, only the fragment sequence below. Opacity's only
+  // job is avoiding a hard pop the moment this element mounts.
+  const mattressOpacity = useTransform(progress, [0.2333, 0.2467], [0, 1], { ease: easeReveal });
 
-  // The object is visible (opacity) almost the instant the reveal begins —
-  // what actually reveals it from here is arrival (scale), focus (blur),
-  // and aperture, never opacity. Opacity's only job is avoiding a hard pop
-  // the moment this element mounts into view.
-  const mattressOpacity = useTransform(progress, [0.313, 0.33], [0, 1], { ease: easeReveal });
-
-  // The reveal, in four beats — starting from the bed's own screen position
-  // (72%, 66%; see the position drift below for why it doesn't stay there):
+  // The fragment sequence itself. Each fragment is a flat pair of stops
+  // (arrive, hold) — the *transition between* consecutive fragments' stops
+  // is where the camera visibly moves from one point of interest to the
+  // next. Six fragments, ending on the full reveal:
   //
-  //   Arrival: scale rushes from bed-size toward its largest — the camera
-  //     closing the remaining distance. Still tight, still blurred.
-  //   Details: a soft, shallow-focus close-up on the stitching and the
-  //     copper edge trim — the aperture opens a little, focus barely.
-  //   Volume: the aperture opens across most of the frame and focus pulls
-  //     further — the whole silhouette reads now, still soft.
-  //   Whole product: fully open, fully sharp, held at its largest — the
-  //     climax the first half of the shot has been building to.
-  const REVEAL_STOPS = [0.318, 0.347, 0.394, 0.434, 0.463];
-
-  const revealAperture = useTransform(progress, REVEAL_STOPS, [12, 15, 42, 96, 160], {
-    ease: [easeReveal, easeBreath, easeBreath, easeBreath],
-  });
-
-  // The camera re-focuses exactly once more after the initial reveal
-  // resolves — a small, brief blur pulse exactly where the frame re-centers
-  // toward the second product detail below (see detailOriginX/Y). A rack
-  // focus, the way a real lens would settle on a new point of interest
-  // mid-move, not a jump cut to a sharp new shot.
-  const revealBlur = useTransform(
-    progress,
-    [...REVEAL_STOPS, 0.68, 0.705, 0.735],
-    [22, 20, 8, 2, 0, 0, 4, 0],
-    { ease: [easeReveal, easeBreath, easeBreath, easeBreath, easeBreath, easeBreath, easeBreath] },
-  );
-
-  // Never illuminated all at once: a directional light travels across the
-  // object in the same four beats as the reveal above, discovering it
-  // rather than switching it on — first grazing the near edge and its
-  // copper trim, then the stitching band, then sweeping across the top
-  // fabric, then clearing the frame entirely by the climax so what's left
-  // is the object's own, already-resolved lighting rather than a moving
-  // highlight. A position (not opacity) drives it, so it reads as a beam
-  // discovering material, not a layer dissolving in.
-  const lightSweep = useTransform(progress, REVEAL_STOPS, [-15, 15, 50, 95, 135], {
-    ease: [easeReveal, easeBreath, easeBreath, easeBreath],
-  });
-
-  // The anchor drifts gently toward center throughout the reveal — a
-  // reframe, not a repositioning — so the object never clips the viewport
-  // edge as it grows to climax size, then continues to its final, lower,
-  // composed position once recomposing begins. This is the last time the
-  // object's screen position or rotation ever changes: every beat of the
-  // product story below moves the camera, not the object.
-  const mattressLeft = useTransform(progress, [REVEAL_STOPS[0], 0.463, 0.521], ["72%", "52%", "50%"], {
-    ease: [easeBreath, easeReveal],
-  });
-  const mattressTop = useTransform(progress, [REVEAL_STOPS[0], 0.463, 0.521], ["66%", "48%", "80%"], {
-    ease: [easeBreath, easeReveal],
-  });
-
-  // 46% -> 52%: only now does the object rotate — turning to its resting
-  // angle. "Revealed" and "coming alive" are different beats; rotation is
-  // held at 0 through the entire reveal above so the object reads as
-  // resolving into focus, not tumbling into view. It never rotates again —
-  // the product story below is told entirely by the camera.
-  const mattressRotate = useTransform(progress, [0.463, 0.521], [0, 12], { ease: easeReveal });
-
-  // Studio dressing (ambient glow, contact shadow, fog) arrives right as the
-  // reveal reaches full focus — the light turning on for the climax — and
-  // holds through the settle into center and everything after.
-  const studioOpacity = useTransform(progress, [0.434, 0.504], [0, 1], { ease: easeBreath });
-
-  // The reveal used to end here. It doesn't anymore: the object is now at
-  // rest, composed, floating — and the camera keeps going, telling the rest
-  // of its story rather than handing straight off to the title card.
+  //   shape (23-27%)       -> edge (31-35%)      -> stitching (38-42%)
+  //   -> material (46-50%) -> proportions (54-58%) -> the whole (63-68%)
   //
-  //   Held (52-56.5%): the first unhurried look at the finished product.
-  //   Push (56.5-62%): the camera moves in past presentation size, onto the
-  //     exact point the reveal already anchored on — the stitching and
-  //     copper trim, dead-center of the source photograph.
-  //   Held (62-68%): a second, closer look — this is the "I want to touch
-  //     this" beat, not the "I've already seen it" one.
-  //   Reframe (68-73.5%): the frame re-centers toward the object's opposite
-  //     long edge, where its nameplate sits — one continuous camera move,
-  //     not a cut, carrying the small focus pulse from revealBlur above.
-  //   Held (73.5-79%): a second detail, given the same unhurried attention
-  //     as the first.
-  //   Pull back (79-83.5%): the camera retreats to the full, composed
-  //     product — the story resolving, not simply stopping.
-  //   Held (83.5-86%): one last, calm look before the title card.
-  //
-  // One continuous curve for the whole arc, exactly as the original reveal
-  // was: scale rushing to its climax, settling to rest, then continuing
-  // into these later pushes and pulls, rather than a second, separate
-  // motion value bolted on top of a "finished" one.
+  // detailOriginX/Y decide *where* each fragment sits on the object's own
+  // surface (see the anchors table below, chosen against the actual source
+  // photograph: the stitching and copper trim sit dead-center of it; its
+  // near corner and far corner are where "shape" and "edge" read cleanest
+  // as pure contour/glint before anything else resolves).
+  const FRAG_STOPS = [
+    0.2333, 0.2733, // shape
+    0.31, 0.3467, // edge
+    0.3833, 0.4233, // stitching
+    0.46, 0.5, // material
+    0.54, 0.5833, // proportions
+    0.6333, 0.6833, // the whole (arrives, then holds at climax)
+  ];
+  const FRAG_EASE = [
+    easeBreath, easeReveal, easeBreath, easeReveal, easeBreath,
+    easeReveal, easeBreath, easeReveal, easeBreath, easeReveal, easeBreath,
+  ];
+
+  // How magnified the current fragment is. High and abstract for "shape,"
+  // easing down as each fragment gets more legible and more context
+  // enters frame, then surging back up as the whole object finally
+  // resolves — the camera's one decisive final push.
   const mattressScale = useTransform(
     progress,
-    [...REVEAL_STOPS, 0.521, 0.565, 0.62, 0.68, 0.735, 0.79, 0.835, 0.86],
-    [0.4, 1.6, 2.0, 2.2, 2.3, 1, 1, 1.55, 1.55, 1.62, 1.62, 1, 1],
+    [...FRAG_STOPS, 0.7233, 0.7567, 0.7967, 0.84, 0.88],
+    [3.3, 3.3, 2.9, 2.9, 2.6, 2.6, 2.3, 2.3, 1.7, 1.7, 2.3, 2.3, 1, 1, 1.55, 1.55, 1],
     {
       ease: [
-        easeReveal,
-        easeBreath,
-        easeBreath,
-        easeBreath,
-        easeReveal,
-        easeBreath,
-        easeReveal,
-        easeBreath,
-        easeBreath,
-        easeBreath,
-        easeReveal,
-        easeBreath,
+        ...FRAG_EASE,
+        easeReveal, // climax -> settles to resting, composed size
+        easeBreath, // held at rest
+        easeReveal, // pushes toward the nameplate detail
+        easeBreath, // held on the nameplate
+        easeReveal, // pulls back to the full, composed product
       ],
     },
   );
 
-  // Where the camera's later pushes (scale, above) expand from — the
-  // reframe that makes a push read as "moving to a different part of the
-  // object" rather than "the same close-up, bigger." Holds at the object's
-  // own center (50/50 — where the reveal itself already centered the
-  // stitching and trim) through the first detail, then eases toward its
-  // opposite long edge for the second, then eases back to center as the
-  // camera pulls out to the full product. Never touches posLeft/posTop or
-  // rotate — the object's screen position and angle stay exactly where the
-  // reveal left them.
-  const detailOriginX = useTransform(progress, [0.565, 0.62, 0.68, 0.735, 0.79, 0.835], [50, 50, 50, 70, 70, 50], {
-    ease: [easeReveal, easeBreath, easeBreath, easeBreath, easeReveal],
-  });
-  const detailOriginY = useTransform(progress, [0.565, 0.62, 0.68, 0.735, 0.79, 0.835], [50, 50, 50, 54, 54, 50], {
-    ease: [easeReveal, easeBreath, easeBreath, easeBreath, easeReveal],
-  });
+  // How large the discovery window is — barely a peephole for "shape,"
+  // widening fragment by fragment as more is deliberately let through, then
+  // jumping far past the object's own size for the full reveal so the mask
+  // is, in effect, no longer a mask at all. Real px throughout, for the
+  // same farthest-corner reason as vignetteHole above — off-center anchors
+  // make bare percentages resolve unpredictably.
+  const revealAperture = useTransform(
+    progress,
+    FRAG_STOPS,
+    [28, 28, 36, 36, 50, 50, 65, 65, 105, 105, 800, 800],
+    { ease: FRAG_EASE },
+  );
+
+  // Focus follows the same logic as the aperture: soft and uncertain for
+  // the earliest, most abstract fragments (mystery is the point), sharper
+  // as each fragment gets more materially specific, a touch of softness
+  // returning for "proportions" (a slightly dreamier, pulled-back beat),
+  // then tack-sharp for the reveal. One small extra pulse later, exactly as
+  // the camera re-centers toward the nameplate after the settle — a rack
+  // focus, the way a real lens would settle on a new point of interest
+  // mid-move, not a jump cut to a sharp new shot.
+  const revealBlur = useTransform(
+    progress,
+    [...FRAG_STOPS, 0.7567, 0.78, 0.7967],
+    [15, 15, 11, 11, 5, 5, 1.5, 1.5, 3, 3, 0, 0, 0, 3, 0],
+    { ease: [...FRAG_EASE, easeBreath, easeBreath, easeBreath] },
+  );
+
+  // Where each fragment sits on the object's own surface (see the sequence
+  // doc above for why these specific points, chosen against the actual
+  // source photograph). Holds at center through the reveal's climax, the
+  // settle, and the held rest afterward, then makes one further move late
+  // in the shot — toward the nameplate on the object's far edge — before
+  // easing back to center as the camera pulls back to the full product.
+  const detailOriginX = useTransform(
+    progress,
+    [...FRAG_STOPS, 0.7567, 0.7967, 0.84, 0.88],
+    [38, 38, 28, 28, 50, 50, 58, 58, 48, 48, 50, 50, 50, 72, 72, 50],
+    { ease: [...FRAG_EASE, easeBreath, easeReveal, easeBreath, easeReveal] },
+  );
+  const detailOriginY = useTransform(
+    progress,
+    [...FRAG_STOPS, 0.7567, 0.7967, 0.84, 0.88],
+    [72, 72, 60, 60, 50, 50, 38, 38, 52, 52, 50, 50, 50, 53, 53, 50],
+    { ease: [...FRAG_EASE, easeBreath, easeReveal, easeBreath, easeReveal] },
+  );
+
+  // Only now — after the whole object has already resolved at its climax
+  // size — does it settle to its composed, resting proportions, lift, and
+  // rotate to its ~12deg angle. It never rotates or repositions again;
+  // every later beat (the nameplate push/pull above) is the camera
+  // choosing where to look, never the object performing for it.
+  const mattressRotate = useTransform(progress, [0.6833, 0.7233], [0, 12], { ease: easeReveal });
+  const mattressLeft = useTransform(progress, [0.6833, 0.7233], ["72%", "50%"], { ease: easeReveal });
+  const mattressTop = useTransform(progress, [0.6833, 0.7233], ["66%", "80%"], { ease: easeReveal });
+
+  // A few px of quiet drift as the mattress settles into its resting
+  // composition — not enough to read as camera movement, just enough that
+  // the backdrop isn't inert. Resolved before anything else happens.
+  const atmosphereDriftY = useTransform(progress, [0.6833, 0.7233], [-6, 0], { ease: easeBreath });
+
+  // Studio dressing (ambient glow, contact shadow, fog) arrives right as
+  // the whole object resolves — the light turning on for the climax — and
+  // holds through everything after.
+  const studioOpacity = useTransform(progress, [0.6333, 0.6833], [0, 1], { ease: easeBreath });
 
   // The final arrival plays as one unhurried beat, not a scramble: logo
   // first and alone, then kicker, headline, and CTAs unfurl in a light
@@ -336,20 +316,20 @@ export function useHeroTimeline(progress: MotionValue<number>): HeroTimeline {
   // Only the opacity leg of each reveal carries a custom curve — at a 10-14px
   // drift, an eased Y offset and a linear one are visually indistinguishable,
   // and opacity alone already carries the "arriving" feel.
-  const logoOpacity = useTransform(progress, [0.86, 0.916], [0, 1], { ease: easeReveal });
-  const logoY = useTransform(progress, [0.86, 0.916], [14, 0]);
+  const logoOpacity = useTransform(progress, [0.907, 0.944], [0, 1], { ease: easeReveal });
+  const logoY = useTransform(progress, [0.907, 0.944], [14, 0]);
 
-  const kickerOpacity = useTransform(progress, [0.916, 0.944], [0, 1], { ease: easeReveal });
-  const kickerY = useTransform(progress, [0.916, 0.944], [12, 0]);
+  const kickerOpacity = useTransform(progress, [0.944, 0.963], [0, 1], { ease: easeReveal });
+  const kickerY = useTransform(progress, [0.944, 0.963], [12, 0]);
 
-  const headlineOpacity = useTransform(progress, [0.937, 0.965], [0, 1], { ease: easeReveal });
-  const headlineY = useTransform(progress, [0.937, 0.965], [12, 0]);
+  const headlineOpacity = useTransform(progress, [0.958, 0.977], [0, 1], { ease: easeReveal });
+  const headlineY = useTransform(progress, [0.958, 0.977], [12, 0]);
 
-  const ctaOpacity = useTransform(progress, [0.958, 1], [0, 1], { ease: easeReveal });
-  const ctaY = useTransform(progress, [0.958, 1], [10, 0]);
+  const ctaOpacity = useTransform(progress, [0.972, 1], [0, 1], { ease: easeReveal });
+  const ctaY = useTransform(progress, [0.972, 1], [10, 0]);
   const ctaPointerEvents = useTransform(ctaOpacity, (v): string => (v > 0.6 ? "auto" : "none"));
 
-  const scrollCueOpacity = useTransform(progress, [0.972, 1], [0, 1], { ease: easeReveal });
+  const scrollCueOpacity = useTransform(progress, [0.981, 1], [0, 1], { ease: easeReveal });
 
   return {
     intro: { photoScale, vignetteHole, villaDim, villaSaturate, villaVignette, villaContrast },
@@ -363,7 +343,6 @@ export function useHeroTimeline(progress: MotionValue<number>): HeroTimeline {
       studioOpacity,
       revealAperture,
       revealBlur,
-      lightSweep,
       detailOriginX,
       detailOriginY,
     },
