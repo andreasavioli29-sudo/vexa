@@ -97,7 +97,11 @@ export function CinematicHero() {
   // actually airborne — not while it's still sitting where the bed was
   const studioOpacity = useTransform(progress, [0.75, 0.95], [0, 1]);
 
-  // The headline/CTAs arrive last, once the mattress has fully settled
+  // The logo reveals first, as its own moment, once the mattress has settled
+  const logoOpacity = useTransform(progress, [0.84, 0.92], [0, 1]);
+  const logoY = useTransform(progress, [0.84, 0.92], [14, 0]);
+
+  // The kicker/headline/CTAs follow the logo in, once the mattress has fully settled
   const textOpacity = useTransform(progress, [0.9, 1], [0, 1]);
   const textPointerEvents = useTransform(textOpacity, (v): string => (v > 0.6 ? "auto" : "none"));
 
@@ -149,7 +153,12 @@ export function CinematicHero() {
           studioOpacity={studioOpacity}
         />
 
-        <Hero textOpacity={textOpacity} textPointerEvents={textPointerEvents} />
+        <Hero
+          logoOpacity={logoOpacity}
+          logoY={logoY}
+          textOpacity={textOpacity}
+          textPointerEvents={textPointerEvents}
+        />
       </div>
     </div>
   );

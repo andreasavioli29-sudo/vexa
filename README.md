@@ -49,7 +49,8 @@ src/
   components/
     ui/                 shadcn-style primitives (button.tsx …)
     layout/             navbar.tsx, footer.tsx
-    sections/           hero.tsx (and future page sections)
+    sections/           cinematic-hero.tsx (bed → mattress scroll sequence), hero.tsx
+    loader/             premium-loader.tsx (asset-aware entrance mark)
     providers/          smooth-scroll-provider.tsx (Lenis)
     logo.tsx            VEXA wordmark + mark
   lib/
@@ -60,10 +61,16 @@ src/
 
 - Clean, scalable project structure
 - Full design system (colors, type, motion primitives)
+- Premium loader: holds until hero imagery is decoded, an animated mark
+  reveal, respects `prefers-reduced-motion`, locks scroll (Lenis + document)
+  until ready
 - Minimal navbar (transparent → glass on scroll, mobile overlay menu)
 - Minimal footer
-- Fullscreen hero: logo, "The Art of Sleeping" kicker, headline, dual CTAs,
-  ambient copper glow + grain, animated scroll cue
+- Cinematic hero: one continuous scroll-driven shot — a villa bedroom dollies
+  in, irises to black around the bed, and the VEXA ONE mattress emerges from
+  that exact position, lifts, and settles centered — followed by a staggered
+  logo reveal, "The Art of Sleeping" kicker, headline, dual CTAs, and an
+  animated scroll cue
 
 Navigation links to `/one`, `/signature`, `/craftsmanship` etc. are wired for
 future sprints and will 404 until those pages are built.
