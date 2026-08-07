@@ -1,10 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { motion, useMotionTemplate, type MotionValue } from "framer-motion";
+import { motion, useMotionTemplate, useReducedMotion, type MotionValue } from "framer-motion";
 
 import { useMarkHeroAssetLoaded } from "@/components/providers/hero-assets-provider";
 import { HERO_MATTRESS_IMAGE } from "@/lib/hero-assets";
+import { EASE_BREATH } from "@/lib/motion";
 
 type MattressVisualProps = {
   tiltX: MotionValue<number>;
@@ -45,6 +46,7 @@ export function MattressVisual({
   studioOpacity,
 }: MattressVisualProps) {
   const markLoaded = useMarkHeroAssetLoaded();
+  const reduceMotion = useReducedMotion();
   const sheen = useMotionTemplate`radial-gradient(620px circle at ${lightX}% ${lightY}%, rgba(255,255,255,0.1), transparent 60%)`;
 
   return (
@@ -69,22 +71,50 @@ export function MattressVisual({
           aspectRatio: "1536 / 1024",
         }}
       >
-        {/* ambient copper atmosphere behind the object — studio dressing only */}
+        {/*
+          Ambient copper atmosphere behind the object — studio dressing
+          only. Scroll controls whether it's visible at all (outer); one
+          extremely slow opacity breathe on just the primary glow makes the
+          light feel alive rather than a static prop, without ever reading
+          as "an animation" — frozen for reduced motion. The smaller white
+          highlight stays static: one breathing light reads as considered,
+          two independently-phased ones would start to read as an effect.
+        */}
         <motion.div
           style={{ opacity: studioOpacity }}
-          className="absolute left-1/2 top-1/2 h-[80%] w-[92%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(193,122,78,0.16),transparent)] blur-[90px]"
-        />
+          className="absolute left-1/2 top-1/2 h-[80%] w-[92%] -translate-x-1/2 -translate-y-1/2 rounded-full"
+        >
+          <motion.div
+            className="h-full w-full rounded-full bg-[radial-gradient(closest-side,rgba(193,122,78,0.16),transparent)] blur-[90px]"
+            animate={reduceMotion ? undefined : { opacity: [1, 0.8, 1] }}
+            transition={{ duration: 13, repeat: Infinity, ease: EASE_BREATH }}
+          />
+        </motion.div>
         <motion.div
           style={{ opacity: studioOpacity }}
           className="absolute left-1/2 top-1/2 h-[55%] w-[60%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(255,255,255,0.06),transparent)] blur-[70px]"
         />
 
-        {/* slow continuous float — the photo's own baked-in camera angle needs no extra base rotation */}
+        {/*
+          Weightless, not spinning: a slow vertical breath plus a barely
+          perceptible tilt — never a product-viewer rotation. A second,
+          much smaller scale-breathe runs on its own, longer, out-of-phase
+          duration so the two never lock into an obviously repeating loop.
+          Reduced motion holds the object at rest instead.
+        */}
         <motion.div
           className="relative h-full w-full"
           style={{ transformStyle: "preserve-3d" }}
-          animate={{ y: [0, -14, 0], rotate: [-0.6, 0.6, -0.6] }}
-          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+          animate={
+            reduceMotion
+              ? undefined
+              : { y: [0, -10, 0], rotate: [-0.4, 0.4, -0.4], scale: [1, 1.006, 1] }
+          }
+          transition={{
+            y: { duration: 10, repeat: Infinity, ease: EASE_BREATH },
+            rotate: { duration: 10, repeat: Infinity, ease: EASE_BREATH },
+            scale: { duration: 17, repeat: Infinity, ease: EASE_BREATH },
+          }}
         >
           {/* mouse-reactive tilt (the "lighting" layer) */}
           <motion.div

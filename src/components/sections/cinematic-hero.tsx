@@ -1,13 +1,14 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useScroll } from "framer-motion";
+import { motion, useReducedMotion, useScroll } from "framer-motion";
 
 import { IntroScene } from "@/components/sections/intro-scene";
 import { MattressVisual } from "@/components/sections/mattress-visual";
 import { Hero } from "@/components/sections/hero";
 import { useHeroTimeline } from "@/hooks/use-hero-timeline";
 import { usePointerTilt } from "@/hooks/use-pointer-tilt";
+import { EASE_BREATH } from "@/lib/motion";
 
 /**
  * One uninterrupted camera shot, not a sequence of sections. The actual
@@ -22,6 +23,7 @@ import { usePointerTilt } from "@/hooks/use-pointer-tilt";
  */
 export function CinematicHero() {
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const reduceMotion = useReducedMotion();
 
   const { scrollYProgress: progress } = useScroll({
     target: wrapperRef,
@@ -59,16 +61,29 @@ export function CinematicHero() {
           order (this div comes before MattressVisual below), never in front
           of it. It used to live inside Hero, but Hero paints after the
           mattress too, so its fully-opaque black layer was silently hiding
-          the mattress the instant it reached full opacity.
+          the mattress the instant it reached full opacity. A few px of
+          scroll-linked drift (y) keeps the backdrop from feeling inert once
+          the choreographed moves are done; it's a quiet, held camera, not a
+          static frame.
         */}
         <motion.div
           aria-hidden="true"
-          style={{ opacity: timeline.transition.atmosphereOpacity }}
+          style={{ opacity: timeline.transition.atmosphereOpacity, y: timeline.transition.atmosphereDriftY }}
           className="bg-grain pointer-events-none absolute inset-0 bg-black"
         >
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_18%_-8%,var(--color-anthracite-800),transparent)] opacity-70" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_60%_at_84%_6%,var(--color-anthracite-900),transparent)]" />
-          <div className="absolute inset-x-0 bottom-0 h-[65%] bg-[radial-gradient(ellipse_85%_70%_at_50%_100%,rgba(138,82,48,0.16),transparent_70%)]" />
+          {/*
+            The one place the black background is allowed to feel alive: an
+            extremely slow, low-amplitude opacity breathe on the warm glow
+            only — perceived subconsciously, never as "an animation." Frozen
+            for anyone who's asked for less motion.
+          */}
+          <motion.div
+            className="absolute inset-x-0 bottom-0 h-[65%] bg-[radial-gradient(ellipse_85%_70%_at_50%_100%,rgba(138,82,48,0.16),transparent_70%)]"
+            animate={reduceMotion ? undefined : { opacity: [1, 0.82, 1] }}
+            transition={{ duration: 26, repeat: Infinity, ease: EASE_BREATH }}
+          />
           <div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_0%,var(--color-black-900)_92%)] opacity-70" />
           <div className="absolute inset-0 shadow-[inset_0_0_180px_60px_rgba(0,0,0,0.55)]" />
         </motion.div>
