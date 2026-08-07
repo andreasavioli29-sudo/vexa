@@ -1,17 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Fraunces } from "next/font/google";
+import { Geist, Fraunces } from "next/font/google";
 import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provider";
+import { HeroAssetsProvider } from "@/components/providers/hero-assets-provider";
 import { PremiumLoader } from "@/components/loader/premium-loader";
 import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-sans",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-mono",
   subsets: ["latin"],
   display: "swap",
 });
@@ -49,12 +44,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} h-full scroll-smooth antialiased`}
+      className={`${geistSans.variable} ${fraunces.variable} h-full scroll-smooth antialiased`}
     >
       <body className="flex min-h-full flex-col bg-black text-white selection:bg-copper-400/30 selection:text-white">
         <SmoothScrollProvider>
-          <PremiumLoader />
-          {children}
+          <HeroAssetsProvider>
+            <PremiumLoader />
+            {children}
+          </HeroAssetsProvider>
         </SmoothScrollProvider>
       </body>
     </html>

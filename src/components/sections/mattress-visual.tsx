@@ -3,6 +3,9 @@
 import Image from "next/image";
 import { motion, useMotionTemplate, type MotionValue } from "framer-motion";
 
+import { useMarkHeroAssetLoaded } from "@/components/providers/hero-assets-provider";
+import { HERO_MATTRESS_IMAGE } from "@/lib/hero-assets";
+
 type MattressVisualProps = {
   tiltX: MotionValue<number>;
   tiltY: MotionValue<number>;
@@ -41,6 +44,7 @@ export function MattressVisual({
   scale,
   studioOpacity,
 }: MattressVisualProps) {
+  const markLoaded = useMarkHeroAssetLoaded();
   const sheen = useMotionTemplate`radial-gradient(620px circle at ${lightX}% ${lightY}%, rgba(255,255,255,0.1), transparent 60%)`;
 
   return (
@@ -102,13 +106,15 @@ export function MattressVisual({
               }}
             >
               <Image
-                src="/images/vexa-one-hero.png"
+                src={HERO_MATTRESS_IMAGE}
                 alt="VEXA ONE — the official product"
                 fill
                 priority
                 sizes="(min-width: 1024px) 55vw, 90vw"
                 className="select-none object-contain"
                 draggable={false}
+                onLoad={() => markLoaded(HERO_MATTRESS_IMAGE)}
+                onError={() => markLoaded(HERO_MATTRESS_IMAGE)}
               />
             </div>
             {/* subtle mouse-reactive sheen over the photo */}

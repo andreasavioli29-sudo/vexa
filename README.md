@@ -32,29 +32,41 @@ All design tokens live in `src/app/globals.css` under `:root` / `@theme inline`:
 | `--color-copper-600…100` | Satin copper accent (used sparingly: kickers, hover underlines, one accent word) |
 | `--font-sans` | Geist Sans — UI, body, nav |
 | `--font-display` | Fraunces — editorial display accents (e.g. the italic close of the hero headline) |
-| `--font-mono` | Geist Mono — reserved for numerals/labels |
 
 Utilities: `.bg-grain` (subtle film-grain overlay for dark hero/section
-backgrounds), `animate-fade-up` / `animate-marquee` keyframes.
+backgrounds). Shared easing curves (`EASE_REVEAL`, `EASE_CURTAIN`) live in
+`src/lib/motion.ts` rather than as inline bezier arrays.
 
 ## Structure
 
 ```
 src/
   app/
-    layout.tsx        Fonts, metadata, Lenis provider
+    layout.tsx        Fonts, metadata, Lenis + hero-assets providers
     page.tsx           Assembles Navbar / Hero / Footer
     globals.css        Design tokens (Tailwind v4 @theme)
     icon.svg            Favicon / app icon
   components/
     ui/                 shadcn-style primitives (button.tsx …)
     layout/             navbar.tsx, footer.tsx
-    sections/           cinematic-hero.tsx (bed → mattress scroll sequence), hero.tsx
-    loader/             premium-loader.tsx (asset-aware entrance mark)
-    providers/          smooth-scroll-provider.tsx (Lenis)
-    logo.tsx            VEXA wordmark + mark
+    sections/           cinematic-hero.tsx (wires the timeline to the DOM),
+                        intro-scene.tsx, mattress-visual.tsx, hero.tsx
+    loader/             premium-loader.tsx (asset-aware entrance mark,
+                        reuses LogoMark for its draw-in reveal)
+    providers/          smooth-scroll-provider.tsx (Lenis),
+                        hero-assets-provider.tsx (load-once signal so the
+                        loader and the actual <Image>s never double-fetch)
+    logo.tsx            VEXA wordmark + mark (LogoMark takes optional
+                        ring/dot motion props for reveal animations)
+  hooks/
+    use-hero-timeline.ts  CinematicHero's scroll choreography, grouped by
+                        scene (intro/transition/mattress/hero) — the single
+                        source of truth for future scenes to extend
+    use-pointer-tilt.ts   Mouse-reactive tilt/light, independent of scroll
   lib/
     utils.ts            cn() class merge helper
+    motion.ts            Shared easing curves (EASE_REVEAL, EASE_CURTAIN)
+    hero-assets.ts        Canonical hero image paths
 ```
 
 ## Sprint 1 scope

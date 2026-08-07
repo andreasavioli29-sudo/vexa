@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 
 import { Logo } from "@/components/logo";
+import { EASE_REVEAL } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
@@ -37,7 +38,7 @@ export function Navbar() {
     <motion.header
       initial={{ y: -24, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.8, ease: EASE_REVEAL }}
       className={cn(
         "fixed inset-x-0 top-0 z-50 transition-colors duration-500",
         open
@@ -85,7 +86,7 @@ export function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.4, ease: EASE_REVEAL }}
             className="overflow-hidden border-t border-white/10 md:hidden"
           >
             <nav className="flex flex-col gap-1 px-6 py-8 sm:px-10">

@@ -3,6 +3,10 @@
 import Image from "next/image";
 import { motion, useMotionTemplate, useTransform, type MotionValue } from "framer-motion";
 
+import { useMarkHeroAssetLoaded } from "@/components/providers/hero-assets-provider";
+import { HERO_VILLA_IMAGE } from "@/lib/hero-assets";
+import { EASE_REVEAL } from "@/lib/motion";
+
 type IntroSceneProps = {
   photoScale: MotionValue<number>;
   vignetteHole: MotionValue<number>;
@@ -16,6 +20,7 @@ type IntroSceneProps = {
  * same point is where the floating mattress (Scene 02) takes over.
  */
 export function IntroScene({ photoScale, vignetteHole }: IntroSceneProps) {
+  const markLoaded = useMarkHeroAssetLoaded();
   const vignetteOuter = useTransform(vignetteHole, (h) => h + 20);
   const vignette = useMotionTemplate`radial-gradient(circle at 72% 66%, transparent 0%, transparent ${vignetteHole}%, rgba(3,3,3,0.99) ${vignetteOuter}%)`;
 
@@ -24,17 +29,19 @@ export function IntroScene({ photoScale, vignetteHole }: IntroSceneProps) {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 2.2, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 2.2, ease: EASE_REVEAL }}
         style={{ scale: photoScale, transformOrigin: "72% 66%" }}
         className="absolute inset-0"
       >
         <Image
-          src="/hero-villa.jpg"
+          src={HERO_VILLA_IMAGE}
           alt="VEXA — contemporary villa bedroom with floor-to-ceiling glass overlooking a mountain sunrise"
           fill
           priority
           sizes="100vw"
           className="object-cover"
+          onLoad={() => markLoaded(HERO_VILLA_IMAGE)}
+          onError={() => markLoaded(HERO_VILLA_IMAGE)}
         />
       </motion.div>
 
