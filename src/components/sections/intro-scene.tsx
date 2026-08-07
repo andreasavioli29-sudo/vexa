@@ -12,6 +12,8 @@ type IntroSceneProps = {
   vignetteHole: MotionValue<number>;
   villaDim: MotionValue<number>;
   villaSaturate: MotionValue<number>;
+  villaVignette: MotionValue<number>;
+  villaContrast: MotionValue<number>;
 };
 
 /**
@@ -24,15 +26,33 @@ type IntroSceneProps = {
  * for either — the camera continuously dollies in (scale) while its own
  * exposure changes, and the same point it's closing in on is exactly where
  * the floating mattress (Scene 02) picks up.
+ *
+ * A second, independent light layer — the vignette — builds hierarchy
+ * inside that same photo well before `villaDim` actually darkens the room:
+ * a soft falloff anchored on the bed, letting its edges recede while the
+ * bed itself stays comparatively lit, so the eye is drawn there naturally
+ * rather than by brightness dropping everywhere at once.
  */
-export function IntroScene({ photoScale, vignetteHole, villaDim, villaSaturate }: IntroSceneProps) {
+export function IntroScene({
+  photoScale,
+  vignetteHole,
+  villaDim,
+  villaSaturate,
+  villaVignette,
+  villaContrast,
+}: IntroSceneProps) {
   const markLoaded = useMarkHeroAssetLoaded();
   // A proportional (not fixed) falloff — 40% wider than the hole itself —
   // so the edge stays a soft, consistent fraction of the aperture at every
   // size, from wide-open to nearly shut.
   const maskOuter = useTransform(vignetteHole, (h) => h * 1.4);
   const irisMask = useMotionTemplate`radial-gradient(circle at 72% 66%, white 0px, white ${vignetteHole}px, transparent ${maskOuter}px)`;
-  const exposure = useMotionTemplate`brightness(${villaDim}) saturate(${villaSaturate})`;
+  const exposure = useMotionTemplate`brightness(${villaDim}) saturate(${villaSaturate}) contrast(${villaContrast})`;
+  // A wide, feathered falloff — deliberately much softer-edged than the
+  // iris above, which is a hard aperture closing later in the sequence.
+  // This one is just light receding toward the frame's edges, anchored on
+  // the same point the camera is already closing in on.
+  const vignetteGradient = useMotionTemplate`radial-gradient(ellipse 78% 70% at 72% 66%, transparent 30%, rgba(0,0,0,${villaVignette}) 100%)`;
 
   return (
     <div className="absolute inset-0 overflow-hidden">
@@ -63,6 +83,16 @@ export function IntroScene({ photoScale, vignetteHole, villaDim, villaSaturate }
             className="object-cover"
             onLoad={() => markLoaded(HERO_VILLA_IMAGE)}
             onError={() => markLoaded(HERO_VILLA_IMAGE)}
+          />
+          {/*
+            Inside the same scaled wrapper as the photo, so the falloff
+            dollies in with it rather than sitting on top as a fixed shape —
+            a real lens's vignette tightens as it zooms, it doesn't stay put.
+          */}
+          <motion.div
+            aria-hidden="true"
+            className="absolute inset-0"
+            style={{ backgroundImage: vignetteGradient }}
           />
         </motion.div>
       </motion.div>

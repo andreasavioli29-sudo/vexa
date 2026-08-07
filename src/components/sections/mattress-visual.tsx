@@ -33,6 +33,8 @@ type MattressVisualProps = {
   revealAperture: MotionValue<number>;
   /** Focus pull, in px of blur, driving the reveal from soft close-up to fully sharp. */
   revealBlur: MotionValue<number>;
+  /** Position (%) of a directional light discovering the object, edge to silhouette. */
+  lightSweep: MotionValue<number>;
 };
 
 /**
@@ -42,6 +44,14 @@ type MattressVisualProps = {
  * frame/pillows/duvet disappear into the blackout, then lifts, rotates, and
  * drifts to centered as one continuous scroll-driven move — never a second,
  * separate "product hero" cut.
+ *
+ * Focus and aperture (below) govern *when* the object becomes visible;
+ * light governs *how* it reads once it is. A directional beam travels
+ * across the material in the same beats as the reveal — never illuminating
+ * the whole surface at once — while a fixed, low-angle key light stays
+ * underneath it throughout, so the quilting and edge trim keep reading as
+ * volume rather than a flat photograph, exactly the way a real studio
+ * light would sculpt it.
  */
 export function MattressVisual({
   tiltX,
@@ -56,6 +66,7 @@ export function MattressVisual({
   studioOpacity,
   revealAperture,
   revealBlur,
+  lightSweep,
 }: MattressVisualProps) {
   const markLoaded = useMarkHeroAssetLoaded();
   const reduceMotion = useReducedMotion();
@@ -66,6 +77,11 @@ export function MattressVisual({
   const revealApertureOuter = useTransform(revealAperture, (r) => r + 18);
   const revealMask = useMotionTemplate`radial-gradient(circle at 50% 50%, white 0%, white ${revealAperture}%, transparent ${revealApertureOuter}%)`;
   const revealFilter = useMotionTemplate`blur(${revealBlur}px)`;
+  // A soft band of light traveling along the object's own diagonal (the
+  // photo's near edge runs lower-left to upper-right) — discovering edge,
+  // then stitching, then top fabric, then clearing the frame by the
+  // climax, rather than a wash appearing over the whole surface at once.
+  const sweepPosition = useMotionTemplate`${lightSweep}% 50%`;
 
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-0">
@@ -179,6 +195,37 @@ export function MattressVisual({
                   onError={() => markLoaded(HERO_MATTRESS_IMAGE)}
                 />
               </div>
+              {/*
+                A fixed, low-angle key light — always present once any of
+                the object is visible, never animated. Without it the
+                quilting and edge trim read as flat under even studio
+                lighting; this one soft diagonal gradient is enough to sell
+                real volume, the way a single softbox would on set.
+              */}
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(125deg, rgba(255,255,255,0.16) 0%, transparent 45%, rgba(0,0,0,0.22) 100%)",
+                  mixBlendMode: "soft-light",
+                }}
+              />
+              {/*
+                The directional discovery light: travels once across the
+                material as the reveal plays out, then clears the frame by
+                the climax — it is what exposes the object part by part, not
+                a rectangle appearing or a wash over the whole surface.
+              */}
+              <motion.div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(115deg, transparent 32%, rgba(255,241,224,0.55) 48%, transparent 64%)",
+                  backgroundSize: "260% 260%",
+                  backgroundPosition: sweepPosition,
+                  mixBlendMode: "soft-light",
+                }}
+              />
               {/* subtle mouse-reactive sheen over the photo */}
               <motion.div
                 className="absolute inset-0"

@@ -12,6 +12,10 @@ export type HeroTimeline = {
     villaDim: MotionValue<number>;
     /** Saturation multiplier, draining color alongside brightness as the light goes. */
     villaSaturate: MotionValue<number>;
+    /** Opacity of a light-falloff darkening the photo's own edges toward its center (the bed) — hierarchy, not a uniform dim. */
+    villaVignette: MotionValue<number>;
+    /** Contrast multiplier — shadows deepen and separate from midtones as the room's light recedes. */
+    villaContrast: MotionValue<number>;
   };
   transition: {
     /** A whisper of parallax on the studio backdrop as the mattress settles — the camera is still quietly alive. */
@@ -28,6 +32,8 @@ export type HeroTimeline = {
     revealAperture: MotionValue<number>;
     /** Focus pull, in px of blur — heavy at arrival, zero once fully resolved. */
     revealBlur: MotionValue<number>;
+    /** Position (%) of a directional light discovering the object — edge, then stitching, then top fabric, then the whole silhouette. */
+    lightSweep: MotionValue<number>;
   };
   hero: {
     logoOpacity: MotionValue<number>;
@@ -88,6 +94,15 @@ export type HeroTimeline = {
  * (the settle into center, the text unfurling in). Nothing here is linear —
  * a mechanical, constant-rate interpolation is the single fastest way to
  * make a scroll-scrub feel like a slider instead of a shot.
+ *
+ * Light, not just visibility, does the directing. The villa's own vignette
+ * and contrast (below) build hierarchy well before the room actually goes
+ * dark, so the eye is already settling on the bed rather than the room
+ * lighting flatly, uniformly, until it suddenly isn't. The mattress reveal
+ * carries the same idea further: a directional light travels across the
+ * object once it arrives (`lightSweep`), discovering edge, then stitching,
+ * then the top fabric, then the whole silhouette — never switching the
+ * object on all at once.
  */
 export function useHeroTimeline(progress: MotionValue<number>): HeroTimeline {
   // 0% -> 40%: the camera dollies in continuously until the bed fills the screen.
@@ -108,6 +123,21 @@ export function useHeroTimeline(progress: MotionValue<number>): HeroTimeline {
     ease: [easeBreath, easeBreath],
   });
   const villaSaturate = useTransform(progress, DARK_STOPS, [1, 0.65, 0.5], {
+    ease: [easeBreath, easeBreath],
+  });
+
+  // Hierarchy, not a uniform dim: a light-falloff anchored on the bed
+  // itself grows from the first frame — soft and barely-there while the
+  // room still reads as evenly, naturally lit, then deepening continuously
+  // into the same dark stops above so the eye is already being pulled
+  // toward the bed well before the room actually goes dark. Contrast rises
+  // alongside it — shadows separating from midtones, the way a real room's
+  // falls as its ambient fill drops away and only its strongest source
+  // remains.
+  const villaVignette = useTransform(progress, [0, 0.4, DARK_STOPS[1], DARK_STOPS[2]], [0, 0.45, 0.78, 0.9], {
+    ease: [easeBreath, easeBreath, easeBreath],
+  });
+  const villaContrast = useTransform(progress, [0, 0.4, DARK_STOPS[2]], [1, 1.06, 1.22], {
     ease: [easeBreath, easeBreath],
   });
 
@@ -153,6 +183,18 @@ export function useHeroTimeline(progress: MotionValue<number>): HeroTimeline {
     ease: [easeReveal, easeBreath, easeBreath, easeBreath],
   });
   const revealBlur = useTransform(progress, REVEAL_STOPS, [22, 20, 8, 2, 0], {
+    ease: [easeReveal, easeBreath, easeBreath, easeBreath],
+  });
+
+  // Never illuminated all at once: a directional light travels across the
+  // object in the same four beats as the reveal above, discovering it
+  // rather than switching it on — first grazing the near edge and its
+  // copper trim, then the stitching band, then sweeping across the top
+  // fabric, then clearing the frame entirely by the climax so what's left
+  // is the object's own, already-resolved lighting rather than a moving
+  // highlight. A position (not opacity) drives it, so it reads as a beam
+  // discovering material, not a layer dissolving in.
+  const lightSweep = useTransform(progress, REVEAL_STOPS, [-15, 15, 50, 95, 135], {
     ease: [easeReveal, easeBreath, easeBreath, easeBreath],
   });
 
@@ -217,7 +259,7 @@ export function useHeroTimeline(progress: MotionValue<number>): HeroTimeline {
   const scrollCueOpacity = useTransform(progress, [0.98, 1], [0, 1], { ease: easeReveal });
 
   return {
-    intro: { photoScale, vignetteHole, villaDim, villaSaturate },
+    intro: { photoScale, vignetteHole, villaDim, villaSaturate, villaVignette, villaContrast },
     transition: { atmosphereDriftY },
     mattress: {
       opacity: mattressOpacity,
@@ -228,6 +270,7 @@ export function useHeroTimeline(progress: MotionValue<number>): HeroTimeline {
       studioOpacity,
       revealAperture,
       revealBlur,
+      lightSweep,
     },
     hero: {
       logoOpacity,
