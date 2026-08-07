@@ -56,7 +56,12 @@ users until it's resolved.*
   it was the single highest-leverage fix identified in the Sprint 1 audit.
 - **Complexity:** M
 - **Dependencies:** None
-- **Status:** Todo
+- **Status:** Interim fix shipped (Sprint 1 — Navigation Integrity). All
+  nine routes now resolve via a shared `PlaceholderPage` component instead
+  of 404ing. The real destinations are tracked separately and remain open:
+  `HIGH-6` (`/one`), `HIGH-7` (`/signature`), `HIGH-11` (`/privacy`,
+  `/terms`), `MED-7` (`/craftsmanship`), `MED-8` (`/journal`), `MED-9`
+  (`/warranty`, `/careers`, `/accessories`).
 
 #### CRIT-2 — Upgrade Next.js to clear pending vulnerabilities and the tooling version mismatch
 

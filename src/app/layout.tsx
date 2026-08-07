@@ -2,7 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Fraunces } from "next/font/google";
 import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provider";
 import { HeroAssetsProvider } from "@/components/providers/hero-assets-provider";
-import { PremiumLoader } from "@/components/loader/premium-loader";
+import { Navbar } from "@/components/layout/navbar";
+import { Footer } from "@/components/layout/footer";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -49,8 +50,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col bg-black text-white selection:bg-copper-400/30 selection:text-white">
         <SmoothScrollProvider>
           <HeroAssetsProvider>
-            <PremiumLoader />
+            <Navbar />
             {children}
+            <Footer />
           </HeroAssetsProvider>
         </SmoothScrollProvider>
       </body>
